@@ -36,13 +36,13 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or principal == #id")
+    @PreAuthorize("hasRole('ADMIN') or principal.equals(#id)")
     public ResponseEntity<UserResponse> getOne(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findById(id));
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or principal == #id")
+    @PreAuthorize("hasRole('ADMIN') or principal.equals(#id)")
     public ResponseEntity<UserResponse> update(@PathVariable Long id,
                                                @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.update(id, request));
