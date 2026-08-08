@@ -31,10 +31,15 @@ public class JwtProvider {
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("role", role.name())
+                .claim("type", "access")
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessTokenExpiration()))
                 .signWith(key)
                 .compact();
+    }
+
+    public boolean isAccessToken(String token) {
+        return "access".equals(getClaims(token).get("type", String.class));
     }
 
     public String generateRefreshToken(Long userId) {
