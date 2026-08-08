@@ -32,10 +32,10 @@
 
 ---
 
-### 인증/인가 (3.0~3.2) 🔄 진행중
-- [ ] 3.0 User Entity + JJWT 의존성 + Repository
-- [ ] 3.1 JWT Provider + Spring Security 설정
-- [ ] 3.2 Auth API (login / logout / refresh) + User CRUD API
+### 인증/인가 (3.0~3.2) ✅
+- [x] 3.0 User Entity + JJWT 의존성 + Repository
+- [x] 3.1 JWT Provider + Spring Security 설정
+- [x] 3.2 Auth API (login / logout / refresh) + User CRUD API
 
 ---
 
@@ -119,7 +119,7 @@
 ## 기능 요구사항
 
 ### 1차 MVP (반드시 완성)
-- [ ] 로그인 / 역할 기반 접근 제어
+- [x] 로그인 / 역할 기반 접근 제어
 - [ ] 설비 등록 / 관리 (목록, 상세, 상태)
 - [ ] 점검 일정 등록 / 결과 기록
 - [ ] 고장 등록 / 상태 흐름 관리
@@ -146,16 +146,16 @@
 ## API 설계 체크리스트
 
 ### Auth
-- [ ] `POST /api/auth/login`
-- [ ] `POST /api/auth/logout`
-- [ ] `POST /api/auth/refresh`
+- [x] `POST /api/auth/login`
+- [x] `POST /api/auth/logout`
+- [x] `POST /api/auth/refresh`
 
 ### Users
-- [ ] `GET /api/users`
-- [ ] `POST /api/users`
-- [ ] `GET /api/users/{id}`
-- [ ] `PATCH /api/users/{id}`
-- [ ] `DELETE /api/users/{id}`
+- [x] `GET /api/users`
+- [x] `POST /api/users`
+- [x] `GET /api/users/{id}`
+- [x] `PATCH /api/users/{id}`
+- [x] `DELETE /api/users/{id}`
 
 ### Equipments
 - [ ] `GET /api/equipments`
@@ -197,7 +197,7 @@
 
 ## DB 테이블 목록
 
-- [ ] `users`
+- [x] `users`
 - [ ] `departments`
 - [ ] `equipments`
 - [ ] `equipment_types`
