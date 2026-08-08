@@ -1,0 +1,32 @@
+# ===== Backend (Spring Boot / Gradle) =====
+backend/.gradle
+backend/build/
+!backend/gradle/wrapper/gradle-wrapper.jar
+!backend/**/src/main/**/build/
+!backend/**/src/test/**/build/
+backend/bin/
+backend/out/
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# ===== Frontend (Node / Vite) =====
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ===== Environment / Secrets =====
+.env
+.env.local
+*.env
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-*.properties
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
