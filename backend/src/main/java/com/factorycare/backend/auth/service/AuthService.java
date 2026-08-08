@@ -4,13 +4,16 @@ import com.factorycare.backend.auth.dto.LoginRequest;
 import com.factorycare.backend.auth.dto.LoginResponse;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.repository.UserRepository;
+import com.factorycare.backend.security.CustomUserDetails;
 import com.factorycare.backend.security.JwtProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class AuthService {
 
@@ -28,16 +31,12 @@ public class AuthService {
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.loginId(), request.password())
-            );
-        } catch (AuthenticationException e) {
-            throw new IllegalArgumentException("로그인 ID 또는 비밀번호가 올바르지 않습니다.");
-        }
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.loginId(), request.password())
+        );
 
-        User user = userRepository.findByLoginId(request.loginId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
@@ -64,6 +63,9 @@ public class AuthService {
 
     @Transactional
     public void logout(Long userId) {
-        userRepository.findById(userId).ifPresent(u -> u.updateRefreshToken(null));
+        userRepository.findById(userId).ifPresentOrElse(
+                u -> u.updateRefreshToken(null),
+                () -> log.warn("logout called for unknown userId={}", userId)
+        );
     }
 }

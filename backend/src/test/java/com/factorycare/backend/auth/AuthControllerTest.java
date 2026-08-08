@@ -56,13 +56,13 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("잘못된 비밀번호로 로그인 → 400")
+    @DisplayName("잘못된 비밀번호로 로그인 → 401")
     void login_wrong_password() throws Exception {
         var body = Map.of("loginId", "admin01", "password", "wrong");
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 }
