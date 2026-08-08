@@ -14,3 +14,8 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
 
 # Server
 server.port=8080
+
+# JWT
+jwt.secret=your-jwt-secret-key-minimum-32-characters-long
+jwt.access-token-expiration=1800000
+jwt.refresh-token-expiration=604800000
