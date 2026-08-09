@@ -2,8 +2,11 @@ package com.factorycare.backend.domain.equipment.service;
 
 import com.factorycare.backend.domain.equipment.dto.*;
 import com.factorycare.backend.domain.equipment.entity.Equipment;
+import com.factorycare.backend.domain.equipment.entity.EquipmentStatus;
+import com.factorycare.backend.domain.equipment.entity.EquipmentStatusHistory;
 import com.factorycare.backend.domain.equipment.entity.EquipmentType;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
+import com.factorycare.backend.domain.equipment.repository.EquipmentStatusHistoryRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -11,19 +14,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class EquipmentService {
 
     private final EquipmentRepository equipmentRepository;
     private final EquipmentTypeService equipmentTypeService;
     private final UserRepository userRepository;
+    private final EquipmentStatusHistoryRepository statusHistoryRepository;
 
     public EquipmentService(EquipmentRepository equipmentRepository,
                             EquipmentTypeService equipmentTypeService,
-                            UserRepository userRepository) {
+                            UserRepository userRepository,
+                            EquipmentStatusHistoryRepository statusHistoryRepository) {
         this.equipmentRepository = equipmentRepository;
         this.equipmentTypeService = equipmentTypeService;
         this.userRepository = userRepository;
+        this.statusHistoryRepository = statusHistoryRepository;
     }
 
     @Transactional(readOnly = true)
@@ -75,6 +83,34 @@ public class EquipmentService {
     @Transactional
     public void deactivate(Long id) {
         getEquipment(id).deactivate();
+    }
+
+    @Transactional
+    public EquipmentResponse changeStatus(Long id, EquipmentStatusChangeRequest request, Long changedById) {
+        Equipment equipment = getEquipment(id);
+        User changedBy = getUser(changedById);
+        EquipmentStatus previousStatus = equipment.getStatus();
+
+        equipment.changeStatus(request.newStatus());
+
+        statusHistoryRepository.save(EquipmentStatusHistory.builder()
+                .equipment(equipment)
+                .changedBy(changedBy)
+                .previousStatus(previousStatus)
+                .newStatus(request.newStatus())
+                .reason(request.reason())
+                .build());
+
+        return EquipmentResponse.from(equipment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EquipmentStatusHistoryResponse> getStatusHistories(Long id) {
+        Equipment equipment = getEquipment(id);
+        return statusHistoryRepository.findByEquipmentOrderByChangedAtDesc(equipment)
+                .stream()
+                .map(EquipmentStatusHistoryResponse::from)
+                .toList();
     }
 
     Equipment getEquipment(Long id) {

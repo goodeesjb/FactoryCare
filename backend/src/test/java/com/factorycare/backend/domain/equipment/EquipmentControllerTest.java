@@ -3,6 +3,7 @@ package com.factorycare.backend.domain.equipment;
 import com.factorycare.backend.domain.equipment.entity.Equipment;
 import com.factorycare.backend.domain.equipment.entity.EquipmentType;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
+import com.factorycare.backend.domain.equipment.repository.EquipmentStatusHistoryRepository;
 import com.factorycare.backend.domain.equipment.repository.EquipmentTypeRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
@@ -35,6 +36,7 @@ class EquipmentControllerTest {
     @Autowired UserRepository userRepository;
     @Autowired EquipmentTypeRepository equipmentTypeRepository;
     @Autowired EquipmentRepository equipmentRepository;
+    @Autowired EquipmentStatusHistoryRepository statusHistoryRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -45,6 +47,7 @@ class EquipmentControllerTest {
 
     @BeforeEach
     void setUp() {
+        statusHistoryRepository.deleteAll();
         equipmentRepository.deleteAll();
         equipmentTypeRepository.deleteAll();
         userRepository.deleteAll();
@@ -153,6 +156,46 @@ class EquipmentControllerTest {
         // 비활성화 후 조회 → 400
         mockMvc.perform(get("/api/equipments/" + eq.getId())
                         .header("Authorization", workerToken))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("MANAGER가 상태변경 → 이력 자동 기록")
+    void changeStatus_andVerifyHistory() throws Exception {
+        EquipmentType type = equipmentTypeRepository.save(EquipmentType.builder().name("로봇암").build());
+        Equipment eq = equipmentRepository.save(Equipment.builder()
+                .equipmentNo("EQ-001").name("로봇팔A").type(type).assignee(worker).build());
+
+        var body = Map.of("newStatus", "BROKEN", "reason", "모터 과열 감지");
+
+        mockMvc.perform(patch("/api/equipments/" + eq.getId() + "/status")
+                        .header("Authorization", managerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("BROKEN"));
+
+        mockMvc.perform(get("/api/equipments/" + eq.getId() + "/status-histories")
+                        .header("Authorization", workerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].newStatus").value("BROKEN"))
+                .andExpect(jsonPath("$[0].reason").value("모터 과열 감지"))
+                .andExpect(jsonPath("$[0].previousStatus").value("NORMAL"));
+    }
+
+    @Test
+    @DisplayName("reason 없이 상태변경 → 400")
+    void changeStatus_noReason_400() throws Exception {
+        EquipmentType type = equipmentTypeRepository.save(EquipmentType.builder().name("로봇암").build());
+        Equipment eq = equipmentRepository.save(Equipment.builder()
+                .equipmentNo("EQ-001").name("로봇팔A").type(type).assignee(worker).build());
+
+        var body = Map.of("newStatus", "BROKEN");
+
+        mockMvc.perform(patch("/api/equipments/" + eq.getId() + "/status")
+                        .header("Authorization", managerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isBadRequest());
     }
 }

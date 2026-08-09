@@ -10,9 +10,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/equipments")
@@ -62,5 +64,20 @@ public class EquipmentController {
     public ResponseEntity<Void> deactivate(@PathVariable Long id) {
         equipmentService.deactivate(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<EquipmentResponse> changeStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody EquipmentStatusChangeRequest request,
+            @AuthenticationPrincipal Long userId
+    ) {
+        return ResponseEntity.ok(equipmentService.changeStatus(id, request, userId));
+    }
+
+    @GetMapping("/{id}/status-histories")
+    public ResponseEntity<List<EquipmentStatusHistoryResponse>> getStatusHistories(@PathVariable Long id) {
+        return ResponseEntity.ok(equipmentService.getStatusHistories(id));
     }
 }
