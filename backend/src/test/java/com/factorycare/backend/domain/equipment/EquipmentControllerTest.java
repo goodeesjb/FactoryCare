@@ -150,7 +150,7 @@ class EquipmentControllerTest {
                         .header("Authorization", adminToken))
                 .andExpect(status().isNoContent());
 
-        // 비활성화 후 조회 → 404
+        // 비활성화 후 조회 → 400
         mockMvc.perform(get("/api/equipments/" + eq.getId())
                         .header("Authorization", workerToken))
                 .andExpect(status().isBadRequest());

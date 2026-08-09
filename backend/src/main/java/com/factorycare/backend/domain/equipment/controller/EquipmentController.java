@@ -53,7 +53,7 @@ public class EquipmentController {
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<EquipmentResponse> update(@PathVariable Long id,
-                                                     @RequestBody EquipmentUpdateRequest request) {
+                                                     @Valid @RequestBody EquipmentUpdateRequest request) {
         return ResponseEntity.ok(equipmentService.update(id, request));
     }
 
