@@ -85,6 +85,13 @@ GET /api/equipments?equipmentNo=&name=&typeId=&status=&location=&assigneeId=&pag
 
 ---
 
+## 삭제 정책
+
+- **Equipment 삭제**: Soft delete — `active` 플래그 false 처리. User 엔티티와 동일 패턴. 목록 조회 시 `active = true`인 것만 반환.
+- **EquipmentType 삭제**: 해당 유형을 사용하는 설비가 존재하면 삭제 불가 (409 Conflict 반환).
+
+---
+
 ## QueryDSL 검색
 
 `EquipmentSearchCondition` record로 조건 캡슐화:
