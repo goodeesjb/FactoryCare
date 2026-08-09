@@ -4,9 +4,36 @@
 
 ---
 
+## ✅ WBS 2.0~2.3 환경구성 (main)
+
+> 커밋: `30c0d13` | 상태: 완료 (main 직접 커밋)
+
+- [x] Spring Boot 프로젝트 초기 설정
+- [x] React + Vite + TypeScript 프로젝트 초기 설정
+- [x] MariaDB 연결 설정
+- [x] Git 레포지토리 초기화
+
+---
+
+## ✅ WBS 3.0~3.2 인증/인가 (main)
+
+> 커밋: `30c0d13` ~ `11abd2d` | 상태: 완료 (main 직접 커밋)
+
+- [x] User 엔티티 + UserRepository + JJWT 의존성
+- [x] JwtProvider + JwtProperties
+- [x] Spring Security + JWT 필터 설정
+- [x] 로그인/로그아웃/리프레시 토큰 API
+- [x] User CRUD API + 역할 기반 접근제어 (@PreAuthorize)
+- [x] 리팩토링: 로그인 시 DB 중복 조회 제거
+- [x] fix: refresh-token-as-bearer NPE 방지, logout 401 수정
+- [x] fix: @PreAuthorize Long 비교 `==` → `equals()`
+- [x] Frontend 랜딩 페이지 + 기본 라우팅
+
+---
+
 ## ✅ feat/equipment (WBS 4.0~4.3 설비관리)
 
-> PR: feat/equipment → main | 상태: PR 생성 완료
+> 커밋: `9eab96d` ~ `b237355` | 상태: PR 생성 완료
 
 - [x] Task 1: QueryDSL 5.1.0:jakarta 의존성 추가 + JPAQueryFactory Bean 등록
 - [x] Task 2: EquipmentType 엔티티/레포지토리/서비스/컨트롤러
@@ -71,4 +98,4 @@
 
 ---
 
-> 업데이트 규칙: 브랜치 시작 시 태스크 채우기, 완료 시 ✅ + PR 번호 기록
+> 업데이트 규칙: 브랜치 시작 시 태스크 채우기, 완료 시 ✅ + 커밋 범위 기록
