@@ -4,6 +4,7 @@ import LoginPage from '../pages/LoginPage'
 import DashboardPage from '../pages/DashboardPage'
 import EquipmentListPage from '../pages/equipment/EquipmentListPage'
 import EquipmentFormPage from '../pages/equipment/EquipmentFormPage'
+import EquipmentDetailPage from '../pages/equipment/EquipmentDetailPage'
 
 const router = createBrowserRouter([
   {
@@ -28,7 +29,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/equipments/:id',
-    element: <div>Coming soon</div>,
+    element: <EquipmentDetailPage />,
   },
   {
     path: '/equipments/:id/edit',
