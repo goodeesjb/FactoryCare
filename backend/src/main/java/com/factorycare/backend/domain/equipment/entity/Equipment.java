@@ -86,13 +86,14 @@ public class Equipment {
                        LocalDate installedAt, String location, String department,
                        User assignee, String description) {
         if (name != null) this.name = name;
-        if (type != null) this.type = type;
+        // FK 관계 필드는 null을 허용하여 명시적 초기화(삭제) 가능
+        this.type = type;
+        this.assignee = assignee;
         if (manufacturer != null) this.manufacturer = manufacturer;
         if (modelName != null) this.modelName = modelName;
         if (installedAt != null) this.installedAt = installedAt;
         if (location != null) this.location = location;
         if (department != null) this.department = department;
-        if (assignee != null) this.assignee = assignee;
         if (description != null) this.description = description;
     }
 

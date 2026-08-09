@@ -4,11 +4,14 @@ import com.factorycare.backend.domain.equipment.dto.EquipmentSearchCondition;
 import com.factorycare.backend.domain.equipment.entity.Equipment;
 import com.factorycare.backend.domain.equipment.entity.EquipmentStatus;
 import com.factorycare.backend.domain.equipment.entity.QEquipment;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -36,6 +39,7 @@ public class EquipmentRepositoryImpl implements EquipmentRepositoryCustom {
                         locationContains(eq, cond.location()),
                         assigneeEq(eq, cond.assigneeId())
                 )
+                .orderBy(getOrderSpecifiers(eq, pageable.getSort()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -79,5 +83,22 @@ public class EquipmentRepositoryImpl implements EquipmentRepositoryCustom {
 
     private BooleanExpression assigneeEq(QEquipment eq, Long assigneeId) {
         return assigneeId != null ? eq.assignee.id.eq(assigneeId) : null;
+    }
+
+    private OrderSpecifier<?>[] getOrderSpecifiers(QEquipment eq, Sort sort) {
+        if (sort.isUnsorted()) {
+            return new OrderSpecifier[]{eq.createdAt.desc()};
+        }
+        return sort.stream()
+                .map(order -> {
+                    Order direction = order.isAscending() ? Order.ASC : Order.DESC;
+                    return switch (order.getProperty()) {
+                        case "name" -> new OrderSpecifier<>(direction, eq.name);
+                        case "status" -> new OrderSpecifier<>(direction, eq.status);
+                        case "equipmentNo" -> new OrderSpecifier<>(direction, eq.equipmentNo);
+                        default -> new OrderSpecifier<>(Order.DESC, eq.createdAt);
+                    };
+                })
+                .toArray(OrderSpecifier[]::new);
     }
 }
