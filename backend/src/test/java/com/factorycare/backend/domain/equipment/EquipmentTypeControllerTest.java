@@ -1,6 +1,7 @@
 package com.factorycare.backend.domain.equipment;
 
 import com.factorycare.backend.domain.equipment.entity.EquipmentType;
+import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
 import com.factorycare.backend.domain.equipment.repository.EquipmentTypeRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
@@ -31,6 +32,7 @@ class EquipmentTypeControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
+    @Autowired EquipmentRepository equipmentRepository;
     @Autowired EquipmentTypeRepository equipmentTypeRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
@@ -41,6 +43,7 @@ class EquipmentTypeControllerTest {
 
     @BeforeEach
     void setUp() {
+        equipmentRepository.deleteAll();
         equipmentTypeRepository.deleteAll();
         userRepository.deleteAll();
 

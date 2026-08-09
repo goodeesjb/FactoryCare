@@ -1,5 +1,6 @@
 package com.factorycare.backend.domain.user;
 
+import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
@@ -29,6 +30,7 @@ class UserControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
+    @Autowired EquipmentRepository equipmentRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -36,6 +38,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
+        equipmentRepository.deleteAll();
         userRepository.deleteAll();
         User admin = User.builder()
                 .loginId("admin01")
