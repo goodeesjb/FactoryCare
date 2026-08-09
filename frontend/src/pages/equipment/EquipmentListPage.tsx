@@ -128,7 +128,7 @@ export default function EquipmentListPage() {
                       </button>
                       <button
                         onClick={() => {
-                          if (confirm('비활성화하시겠습니까?')) deleteMutation.mutate(eq.id)
+                          if (confirm('설비를 삭제하시겠습니까?')) deleteMutation.mutate(eq.id)
                         }}
                         className="text-red-500 hover:underline"
                       >
@@ -145,7 +145,7 @@ export default function EquipmentListPage() {
           <div className="mt-4 flex items-center justify-center gap-2">
             <button
               disabled={data?.first}
-              onClick={() => setParams((p) => ({ ...p, page: (p.page ?? 1) - 1 }))}
+              onClick={() => setParams((p) => ({ ...p, page: (p.page ?? 0) - 1 }))}
               className="rounded border px-3 py-1 text-sm disabled:opacity-40"
             >
               이전
