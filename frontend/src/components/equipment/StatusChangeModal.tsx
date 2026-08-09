@@ -23,7 +23,7 @@ export default function StatusChangeModal({ equipmentId, currentStatus, onClose 
     mutationFn: () => equipmentApi.changeStatus(equipmentId, { newStatus, reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['equipment', String(equipmentId)] })
-      queryClient.invalidateQueries({ queryKey: ['equipment-histories', equipmentId] })
+      queryClient.invalidateQueries({ queryKey: ['equipment-histories', String(equipmentId)] })
       onClose()
     },
   })

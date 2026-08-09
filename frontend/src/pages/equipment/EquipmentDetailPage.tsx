@@ -18,7 +18,7 @@ export default function EquipmentDetailPage() {
   })
 
   const { data: histories } = useQuery({
-    queryKey: ['equipment-histories', Number(id)],
+    queryKey: ['equipment-histories', id],
     queryFn: () => equipmentApi.getStatusHistories(Number(id)),
     enabled: Boolean(id),
   })
