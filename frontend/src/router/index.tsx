@@ -1,7 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom'
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/LoginPage'
+import RegisterPage from '../pages/RegisterPage'
 import DashboardPage from '../pages/DashboardPage'
+import NotFoundPage from '../pages/NotFoundPage'
 import EquipmentListPage from '../pages/equipment/EquipmentListPage'
 import EquipmentFormPage from '../pages/equipment/EquipmentFormPage'
 import EquipmentDetailPage from '../pages/equipment/EquipmentDetailPage'
@@ -14,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <RegisterPage />,
   },
   {
     path: '/dashboard',
@@ -34,6 +40,10 @@ const router = createBrowserRouter([
   {
     path: '/equipments/:id/edit',
     element: <EquipmentFormPage />,
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
   },
 ])
 
