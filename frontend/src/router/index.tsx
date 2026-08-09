@@ -3,6 +3,7 @@ import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/LoginPage'
 import DashboardPage from '../pages/DashboardPage'
 import EquipmentListPage from '../pages/equipment/EquipmentListPage'
+import EquipmentFormPage from '../pages/equipment/EquipmentFormPage'
 
 const router = createBrowserRouter([
   {
@@ -23,7 +24,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/equipments/new',
-    element: <div>Coming soon</div>,
+    element: <EquipmentFormPage />,
   },
   {
     path: '/equipments/:id',
@@ -31,7 +32,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/equipments/:id/edit',
-    element: <div>Coming soon</div>,
+    element: <EquipmentFormPage />,
   },
 ])
 
