@@ -5,6 +5,9 @@ import com.factorycare.backend.domain.equipment.entity.EquipmentType;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
 import com.factorycare.backend.domain.equipment.repository.EquipmentStatusHistoryRepository;
 import com.factorycare.backend.domain.equipment.repository.EquipmentTypeRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionResultRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
@@ -37,6 +40,9 @@ class EquipmentControllerTest {
     @Autowired EquipmentTypeRepository equipmentTypeRepository;
     @Autowired EquipmentRepository equipmentRepository;
     @Autowired EquipmentStatusHistoryRepository statusHistoryRepository;
+    @Autowired InspectionResultRepository inspectionResultRepository;
+    @Autowired InspectionRepository inspectionRepository;
+    @Autowired InspectionScheduleRepository inspectionScheduleRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -47,6 +53,9 @@ class EquipmentControllerTest {
 
     @BeforeEach
     void setUp() {
+        inspectionResultRepository.deleteAll();
+        inspectionRepository.deleteAll();
+        inspectionScheduleRepository.deleteAll();
         statusHistoryRepository.deleteAll();
         equipmentRepository.deleteAll();
         equipmentTypeRepository.deleteAll();
