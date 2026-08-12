@@ -78,5 +78,8 @@ public class InspectionSchedule {
         this.status = InspectionScheduleStatus.IN_PROGRESS;
     }
 
-    public void complete() { this.status = InspectionScheduleStatus.COMPLETED; }
+    public void complete() {
+        if (this.status == InspectionScheduleStatus.COMPLETED) return;
+        this.status = InspectionScheduleStatus.COMPLETED;
+    }
 }

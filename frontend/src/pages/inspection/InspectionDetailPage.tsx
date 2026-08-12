@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inspectionApi, inspectionChecklistApi, inspectionScheduleApi } from '../../api/inspection'
@@ -116,7 +116,7 @@ function ChecklistForm({
   onComplete: () => void
   isPending: boolean
 }) {
-  const { data: checklist } = useQuery<InspectionChecklist | null>({
+  const { data: scheduleDetail } = useQuery<InspectionChecklist | null>({
     queryKey: ['schedule-checklist', scheduleId],
     queryFn: async () => {
       const schedule = await inspectionScheduleApi.getById(scheduleId)
@@ -125,10 +125,23 @@ function ChecklistForm({
     },
   })
 
+  useEffect(() => {
+    if (!scheduleDetail) return
+    setResultMap((prev) => {
+      const updated = { ...prev }
+      scheduleDetail.items.forEach((item) => {
+        if (!(item.id in updated)) {
+          updated[item.id] = { result: 'PASS', note: '' }
+        }
+      })
+      return updated
+    })
+  }, [scheduleDetail])
+
   return (
     <div className="space-y-3">
       <h2 className="font-medium text-gray-700">점검 항목 입력</h2>
-      {checklist?.items.map((item) => {
+      {scheduleDetail?.items.map((item) => {
         const val = resultMap[item.id] ?? { result: 'PASS' as InspectionResultValue, note: '' }
         return (
           <div key={item.id} className="rounded-lg border p-3 space-y-2">
@@ -166,10 +179,10 @@ function ChecklistForm({
           </div>
         )
       })}
-      {!checklist && <p className="text-gray-400 text-sm">체크리스트 항목 로딩 중...</p>}
+      {!scheduleDetail && <p className="text-gray-400 text-sm">체크리스트 항목 로딩 중...</p>}
       <button
         onClick={onComplete}
-        disabled={isPending || !checklist}
+        disabled={isPending || !scheduleDetail}
         className="mt-4 rounded bg-green-600 px-6 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
       >
         {isPending ? '저장 중...' : '점검 완료'}
