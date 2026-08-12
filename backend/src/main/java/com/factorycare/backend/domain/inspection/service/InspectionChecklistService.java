@@ -26,7 +26,7 @@ public class InspectionChecklistService {
 
     @Transactional(readOnly = true)
     public List<InspectionChecklistResponse> findAll() {
-        return checklistRepository.findAllByActiveTrueOrderByCreatedAtDesc()
+        return checklistRepository.findAllActiveWithItems()
             .stream().map(InspectionChecklistResponse::from).toList();
     }
 
