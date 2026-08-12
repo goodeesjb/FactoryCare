@@ -1,5 +1,8 @@
 package com.factorycare.backend.auth;
 
+import com.factorycare.backend.domain.inspection.repository.InspectionResultRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
@@ -28,10 +31,16 @@ class AuthControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
+    @Autowired InspectionResultRepository inspectionResultRepository;
+    @Autowired InspectionRepository inspectionRepository;
+    @Autowired InspectionScheduleRepository inspectionScheduleRepository;
     @Autowired PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        inspectionResultRepository.deleteAll();
+        inspectionRepository.deleteAll();
+        inspectionScheduleRepository.deleteAll();
         userRepository.deleteAll();
         User user = User.builder()
                 .loginId("admin01")
