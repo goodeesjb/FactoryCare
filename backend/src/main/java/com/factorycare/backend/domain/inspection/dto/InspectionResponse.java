@@ -14,12 +14,16 @@ public record InspectionResponse(
     List<InspectionResultResponse> results,
     LocalDateTime createdAt
 ) {
-    public static InspectionResponse from(Inspection i) {
+    public static InspectionResponse from(Inspection i, List<InspectionResultResponse> results) {
         return new InspectionResponse(
             i.getId(), i.getSchedule().getId(),
             i.getInspector().getId(), i.getInspector().getName(),
             i.getStatus(), i.isHasAbnormality(),
-            i.getCompletedAt(), List.of(), i.getCreatedAt()
+            i.getCompletedAt(), results, i.getCreatedAt()
         );
+    }
+
+    public static InspectionResponse from(Inspection i) {
+        return from(i, List.of());
     }
 }

@@ -38,6 +38,7 @@ class InspectionScheduleControllerTest {
     @Autowired InspectionChecklistRepository checklistRepository;
     @Autowired InspectionScheduleRepository scheduleRepository;
     @Autowired InspectionRepository inspectionRepository;
+    @Autowired InspectionResultRepository resultRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -48,6 +49,7 @@ class InspectionScheduleControllerTest {
 
     @BeforeEach
     void setUp() {
+        resultRepository.deleteAll();
         inspectionRepository.deleteAll();
         scheduleRepository.deleteAll();
         checklistRepository.deleteAll();

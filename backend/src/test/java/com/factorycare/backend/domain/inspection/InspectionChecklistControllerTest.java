@@ -2,6 +2,9 @@ package com.factorycare.backend.domain.inspection;
 
 import com.factorycare.backend.domain.inspection.entity.InspectionChecklist;
 import com.factorycare.backend.domain.inspection.repository.InspectionChecklistRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionResultRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
@@ -33,6 +36,9 @@ class InspectionChecklistControllerTest {
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
     @Autowired InspectionChecklistRepository checklistRepository;
+    @Autowired InspectionScheduleRepository scheduleRepository;
+    @Autowired InspectionRepository inspectionRepository;
+    @Autowired InspectionResultRepository resultRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -40,6 +46,9 @@ class InspectionChecklistControllerTest {
 
     @BeforeEach
     void setUp() {
+        resultRepository.deleteAll();
+        inspectionRepository.deleteAll();
+        scheduleRepository.deleteAll();
         checklistRepository.deleteAll();
         userRepository.deleteAll();
 
