@@ -7,6 +7,8 @@ import NotFoundPage from '../pages/NotFoundPage'
 import EquipmentListPage from '../pages/equipment/EquipmentListPage'
 import EquipmentFormPage from '../pages/equipment/EquipmentFormPage'
 import EquipmentDetailPage from '../pages/equipment/EquipmentDetailPage'
+import InspectionScheduleListPage from '../pages/inspection/InspectionScheduleListPage'
+import InspectionScheduleFormPage from '../pages/inspection/InspectionScheduleFormPage'
 
 const router = createBrowserRouter([
   {
@@ -40,6 +42,14 @@ const router = createBrowserRouter([
   {
     path: '/equipments/:id/edit',
     element: <EquipmentFormPage />,
+  },
+  {
+    path: '/inspection-schedules',
+    element: <InspectionScheduleListPage />,
+  },
+  {
+    path: '/inspection-schedules/new',
+    element: <InspectionScheduleFormPage />,
   },
   {
     path: '*',
