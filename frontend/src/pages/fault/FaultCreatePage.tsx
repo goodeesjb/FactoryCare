@@ -16,7 +16,7 @@ export default function FaultCreatePage() {
   const [error, setError] = useState<string | null>(null)
 
   const { data: equipmentPage } = useQuery({
-    queryKey: ['equipments', 'all'],
+    queryKey: ['equipments', { size: 100 }],
     queryFn: () => equipmentApi.search({ size: 100 }),
   })
 

@@ -19,12 +19,14 @@ export const faultApi = {
   create: (data: FaultCreateRequest) =>
     axiosInstance.post<Fault>('/faults', data).then((r) => r.data),
 
+  // TODO: used by fault edit page (not yet implemented)
   update: (id: number, data: FaultUpdateRequest) =>
     axiosInstance.patch<Fault>(`/faults/${id}`, data).then((r) => r.data),
 
   changeStatus: (id: number, data: FaultStatusChangeRequest) =>
     axiosInstance.patch<Fault>(`/faults/${id}/status`, data).then((r) => r.data),
 
+  // TODO: used by fault assign feature (not yet implemented)
   assign: (id: number, data: FaultAssignRequest) =>
     axiosInstance.patch<Fault>(`/faults/${id}/assign`, data).then((r) => r.data),
 

@@ -12,18 +12,21 @@ import FaultStatusModal from './FaultStatusModal'
 
 export default function FaultDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const faultId = Number(id)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showStatusModal, setShowStatusModal] = useState(false)
 
   const { data: fault, isLoading } = useQuery({
-    queryKey: ['fault', id],
-    queryFn: () => faultApi.getById(Number(id)),
+    queryKey: ['fault', faultId],
+    queryFn: () => faultApi.getById(faultId),
+    enabled: !!id,
   })
 
   const deleteMutation = useMutation({
-    mutationFn: () => faultApi.delete(Number(id)),
+    mutationFn: () => faultApi.delete(faultId),
     onSuccess: () => navigate('/faults'),
+    onError: () => alert('삭제에 실패했습니다.'),
   })
 
   if (isLoading) return <p className="p-6">로딩 중...</p>
@@ -47,7 +50,8 @@ export default function FaultDetailPage() {
             onClick={() => {
               if (confirm('삭제하시겠습니까?')) deleteMutation.mutate()
             }}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            disabled={deleteMutation.isPending}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50"
           >
             삭제
           </button>
@@ -140,7 +144,7 @@ export default function FaultDetailPage() {
           onClose={() => setShowStatusModal(false)}
           onSuccess={() => {
             setShowStatusModal(false)
-            queryClient.invalidateQueries({ queryKey: ['fault', id] })
+            queryClient.invalidateQueries({ queryKey: ['fault', faultId] })
           }}
         />
       )}
