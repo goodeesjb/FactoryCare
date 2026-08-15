@@ -11,6 +11,9 @@ import InspectionChecklistPage from '../pages/inspection/InspectionChecklistPage
 import InspectionScheduleListPage from '../pages/inspection/InspectionScheduleListPage'
 import InspectionScheduleFormPage from '../pages/inspection/InspectionScheduleFormPage'
 import InspectionDetailPage from '../pages/inspection/InspectionDetailPage'
+import FaultListPage from '../pages/fault/FaultListPage'
+import FaultCreatePage from '../pages/fault/FaultCreatePage'
+import FaultDetailPage from '../pages/fault/FaultDetailPage'
 
 const router = createBrowserRouter([
   {
@@ -60,6 +63,18 @@ const router = createBrowserRouter([
   {
     path: '/inspections/:id',
     element: <InspectionDetailPage />,
+  },
+  {
+    path: '/faults',
+    element: <FaultListPage />,
+  },
+  {
+    path: '/faults/new',
+    element: <FaultCreatePage />,
+  },
+  {
+    path: '/faults/:id',
+    element: <FaultDetailPage />,
   },
   {
     path: '*',
