@@ -52,19 +52,39 @@
 
 ---
 
-## 🔜 feat/inspection (WBS 5.0~5.3 점검관리)
+## ✅ feat/inspection (WBS 5.0~5.3 점검관리)
 
-> 상태: 예정
+> 커밋: `7a722bd` ~ `a62fa8f` | 상태: 완료 (main 머지됨)
 
-- [ ] Task 1:
-- [ ] Task 2:
-- [ ] Task 3:
+- [x] Task 1: 체크리스트 엔티티 + 리포지토리
+- [x] Task 2: 체크리스트 DTO + Service + Controller + 테스트
+- [x] Task 3: 점검 일정 엔티티 + QueryDSL 리포지토리
+- [x] Task 4: 점검 일정 DTO + Service + Controller + 테스트
+- [x] Task 5: 점검 수행 엔티티 + Service + Controller + 테스트
+- [x] Task 6: Frontend 타입 + API 클라이언트
+- [x] Task 7: 체크리스트 관리 페이지
+- [x] Task 8: 점검 일정 목록 + 등록 페이지
+- [x] Task 9: 점검 수행 페이지 + 라우터 완성
 
 ---
 
-## ⬜ feat/failure (WBS 6.0~6.3 장애관리)
+## ✅ feat/fault (WBS 6.0~6.3 장애관리 백엔드)
 
-> 상태: 예정
+> 커밋: `51c4e15` ~ `1ad578f` | PR #5 머지 완료
+
+- [x] Task 1: Fault 엔티티 + QueryDSL 리포지토리
+- [x] Task 2: Fault DTO + Service + Controller + 테스트
+- [x] Task 3: 점검결과 연동 (InspectionService.complete() 수정)
+
+---
+
+## ✅ feat/fault-frontend (WBS 6.0~6.3 장애관리 프론트엔드)
+
+> 커밋: `a18668a` ~ `a4f2be9` | PR #6 생성 완료
+
+- [x] Task 4: Frontend 타입 + API 클라이언트
+- [x] Task 5: FaultListPage + FaultCreatePage
+- [x] Task 6: FaultDetailPage + FaultStatusModal + 라우터 등록
 
 ---
 
