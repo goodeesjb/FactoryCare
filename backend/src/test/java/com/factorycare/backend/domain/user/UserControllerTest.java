@@ -1,6 +1,7 @@
 package com.factorycare.backend.domain.user;
 
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
+import com.factorycare.backend.domain.fault.repository.FaultRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionResultRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
@@ -34,6 +35,7 @@ class UserControllerTest {
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
     @Autowired EquipmentRepository equipmentRepository;
+    @Autowired FaultRepository faultRepository;
     @Autowired InspectionResultRepository inspectionResultRepository;
     @Autowired InspectionRepository inspectionRepository;
     @Autowired InspectionScheduleRepository inspectionScheduleRepository;
@@ -44,6 +46,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
+        faultRepository.deleteAll();
         inspectionResultRepository.deleteAll();
         inspectionRepository.deleteAll();
         inspectionScheduleRepository.deleteAll();

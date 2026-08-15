@@ -3,6 +3,7 @@ package com.factorycare.backend.domain.equipment;
 import com.factorycare.backend.domain.equipment.entity.EquipmentType;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
 import com.factorycare.backend.domain.equipment.repository.EquipmentTypeRepository;
+import com.factorycare.backend.domain.fault.repository.FaultRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
@@ -34,6 +35,7 @@ class EquipmentTypeControllerTest {
     @Autowired UserRepository userRepository;
     @Autowired EquipmentRepository equipmentRepository;
     @Autowired EquipmentTypeRepository equipmentTypeRepository;
+    @Autowired FaultRepository faultRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -43,6 +45,7 @@ class EquipmentTypeControllerTest {
 
     @BeforeEach
     void setUp() {
+        faultRepository.deleteAll();
         equipmentRepository.deleteAll();
         equipmentTypeRepository.deleteAll();
         userRepository.deleteAll();

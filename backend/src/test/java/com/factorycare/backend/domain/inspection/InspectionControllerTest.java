@@ -2,6 +2,7 @@ package com.factorycare.backend.domain.inspection;
 
 import com.factorycare.backend.domain.equipment.entity.Equipment;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
+import com.factorycare.backend.domain.fault.repository.FaultRepository;
 import com.factorycare.backend.domain.inspection.entity.*;
 import com.factorycare.backend.domain.inspection.repository.*;
 import com.factorycare.backend.domain.user.entity.User;
@@ -41,6 +42,7 @@ class InspectionControllerTest {
     @Autowired InspectionScheduleRepository scheduleRepository;
     @Autowired InspectionRepository inspectionRepository;
     @Autowired InspectionResultRepository resultRepository;
+    @Autowired FaultRepository faultRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -51,6 +53,7 @@ class InspectionControllerTest {
 
     @BeforeEach
     void setUp() {
+        faultRepository.deleteAll();
         resultRepository.deleteAll();
         inspectionRepository.deleteAll();
         scheduleRepository.deleteAll();

@@ -1,5 +1,6 @@
 package com.factorycare.backend.auth;
 
+import com.factorycare.backend.domain.fault.repository.FaultRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionResultRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
@@ -31,6 +32,7 @@ class AuthControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
+    @Autowired FaultRepository faultRepository;
     @Autowired InspectionResultRepository inspectionResultRepository;
     @Autowired InspectionRepository inspectionRepository;
     @Autowired InspectionScheduleRepository inspectionScheduleRepository;
@@ -38,6 +40,7 @@ class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
+        faultRepository.deleteAll();
         inspectionResultRepository.deleteAll();
         inspectionRepository.deleteAll();
         inspectionScheduleRepository.deleteAll();
