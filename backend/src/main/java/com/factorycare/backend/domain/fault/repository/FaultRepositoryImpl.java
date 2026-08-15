@@ -7,10 +7,12 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Repository
 public class FaultRepositoryImpl implements FaultRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
@@ -68,6 +70,6 @@ public class FaultRepositoryImpl implements FaultRepositoryCustom {
         return from != null ? qf.createdAt.goe(from.atStartOfDay()) : null;
     }
     private BooleanExpression dateTo(QFault qf, LocalDate to) {
-        return to != null ? qf.createdAt.loe(to.plusDays(1).atStartOfDay()) : null;
+        return to != null ? qf.createdAt.lt(to.plusDays(1).atStartOfDay()) : null;
     }
 }

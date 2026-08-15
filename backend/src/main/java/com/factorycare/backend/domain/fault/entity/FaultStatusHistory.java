@@ -3,10 +3,13 @@ package com.factorycare.backend.domain.fault.entity;
 import com.factorycare.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fault_status_histories")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FaultStatusHistory {
@@ -34,8 +37,9 @@ public class FaultStatusHistory {
     @Column(columnDefinition = "TEXT")
     private String reason;
 
-    @Column(nullable = false)
-    private LocalDateTime changedAt = LocalDateTime.now();
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime changedAt;
 
     @Builder
     public FaultStatusHistory(Fault fault, User changedBy, FaultStatus fromStatus,
