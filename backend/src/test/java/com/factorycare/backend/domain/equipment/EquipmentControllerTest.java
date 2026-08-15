@@ -5,6 +5,7 @@ import com.factorycare.backend.domain.equipment.entity.EquipmentType;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
 import com.factorycare.backend.domain.equipment.repository.EquipmentStatusHistoryRepository;
 import com.factorycare.backend.domain.equipment.repository.EquipmentTypeRepository;
+import com.factorycare.backend.domain.fault.repository.FaultRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionResultRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
@@ -40,6 +41,7 @@ class EquipmentControllerTest {
     @Autowired EquipmentTypeRepository equipmentTypeRepository;
     @Autowired EquipmentRepository equipmentRepository;
     @Autowired EquipmentStatusHistoryRepository statusHistoryRepository;
+    @Autowired FaultRepository faultRepository;
     @Autowired InspectionResultRepository inspectionResultRepository;
     @Autowired InspectionRepository inspectionRepository;
     @Autowired InspectionScheduleRepository inspectionScheduleRepository;
@@ -53,6 +55,7 @@ class EquipmentControllerTest {
 
     @BeforeEach
     void setUp() {
+        faultRepository.deleteAll();
         inspectionResultRepository.deleteAll();
         inspectionRepository.deleteAll();
         inspectionScheduleRepository.deleteAll();

@@ -1,5 +1,6 @@
 package com.factorycare.backend.domain.inspection;
 
+import com.factorycare.backend.domain.fault.repository.FaultRepository;
 import com.factorycare.backend.domain.inspection.entity.InspectionChecklist;
 import com.factorycare.backend.domain.inspection.repository.InspectionChecklistRepository;
 import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
@@ -35,6 +36,7 @@ class InspectionChecklistControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository userRepository;
+    @Autowired FaultRepository faultRepository;
     @Autowired InspectionChecklistRepository checklistRepository;
     @Autowired InspectionScheduleRepository scheduleRepository;
     @Autowired InspectionRepository inspectionRepository;
@@ -46,6 +48,7 @@ class InspectionChecklistControllerTest {
 
     @BeforeEach
     void setUp() {
+        faultRepository.deleteAll();
         resultRepository.deleteAll();
         inspectionRepository.deleteAll();
         scheduleRepository.deleteAll();

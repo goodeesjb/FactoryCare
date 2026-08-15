@@ -1,5 +1,6 @@
 package com.factorycare.backend.domain.inspection.service;
 
+import com.factorycare.backend.domain.fault.service.FaultService;
 import com.factorycare.backend.domain.inspection.dto.*;
 import com.factorycare.backend.domain.inspection.entity.*;
 import com.factorycare.backend.domain.inspection.repository.*;
@@ -15,15 +16,18 @@ public class InspectionService {
     private final InspectionResultRepository resultRepository;
     private final InspectionChecklistItemRepository checklistItemRepository;
     private final InspectionScheduleRepository scheduleRepository;
+    private final FaultService faultService;
 
     public InspectionService(InspectionRepository inspectionRepository,
                              InspectionResultRepository resultRepository,
                              InspectionChecklistItemRepository checklistItemRepository,
-                             InspectionScheduleRepository scheduleRepository) {
+                             InspectionScheduleRepository scheduleRepository,
+                             FaultService faultService) {
         this.inspectionRepository = inspectionRepository;
         this.resultRepository = resultRepository;
         this.checklistItemRepository = checklistItemRepository;
         this.scheduleRepository = scheduleRepository;
+        this.faultService = faultService;
     }
 
     @Transactional(readOnly = true)
@@ -62,6 +66,12 @@ public class InspectionService {
         boolean hasAbnormality = results.stream()
             .anyMatch(r -> r.getResult() == InspectionResultValue.FAIL);
         inspection.complete(hasAbnormality);
+
+        if (hasAbnormality) {
+            results.stream()
+                .filter(r -> r.getResult() == InspectionResultValue.FAIL)
+                .forEach(r -> faultService.createFromInspectionResult(r, inspection.getInspector()));
+        }
 
         inspection.getSchedule().complete();
         scheduleRepository.save(inspection.getSchedule());

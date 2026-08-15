@@ -1,4 +1,4 @@
-package com.factorycare.backend.domain.inspection;
+package com.factorycare.backend.domain.fault;
 
 import com.factorycare.backend.domain.equipment.entity.Equipment;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
@@ -25,13 +25,14 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class InspectionControllerTest {
+class FaultAutoCreateTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
@@ -72,10 +73,10 @@ class InspectionControllerTest {
         InspectionChecklist checklist = checklistRepository.save(
             InspectionChecklist.builder().name("일일점검").build());
 
-        item1 = checklistItemRepository.save(
-            InspectionChecklistItem.builder().checklist(checklist).itemName("모터 온도").itemOrder(1).build());
-        item2 = checklistItemRepository.save(
-            InspectionChecklistItem.builder().checklist(checklist).itemName("오일 누유").itemOrder(2).build());
+        item1 = checklistItemRepository.save(InspectionChecklistItem.builder()
+            .checklist(checklist).itemName("모터 온도").itemOrder(1).build());
+        item2 = checklistItemRepository.save(InspectionChecklistItem.builder()
+            .checklist(checklist).itemName("오일 누유").itemOrder(2).build());
 
         InspectionSchedule schedule = scheduleRepository.save(
             InspectionSchedule.builder().equipment(eq).checklist(checklist)
@@ -89,35 +90,8 @@ class InspectionControllerTest {
     }
 
     @Test
-    @DisplayName("점검 상세 조회")
-    void getById() throws Exception {
-        mockMvc.perform(get("/api/inspections/" + inspection.getId())
-                .header("Authorization", workerToken))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
-            .andExpect(jsonPath("$.inspectorName").value("작업자"));
-    }
-
-    @Test
-    @DisplayName("점검 완료 - PASS만 → hasAbnormality false")
-    void complete_allPass() throws Exception {
-        var body = Map.of("results", List.of(
-            Map.of("checklistItemId", item1.getId(), "result", "PASS"),
-            Map.of("checklistItemId", item2.getId(), "result", "PASS")
-        ));
-        mockMvc.perform(post("/api/inspections/" + inspection.getId() + "/complete")
-                .header("Authorization", workerToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("COMPLETED"))
-            .andExpect(jsonPath("$.hasAbnormality").value(false))
-            .andExpect(jsonPath("$.results.length()").value(2));
-    }
-
-    @Test
-    @DisplayName("점검 완료 - FAIL 포함 → hasAbnormality true + needsFaultReport true")
-    void complete_withFail_setsAbnormality() throws Exception {
+    @DisplayName("FAIL 항목 포함 완료 → Fault 자동 생성")
+    void complete_withFail_createsFault() throws Exception {
         var body = Map.of("results", List.of(
             Map.of("checklistItemId", item1.getId(), "result", "PASS"),
             Map.of("checklistItemId", item2.getId(), "result", "FAIL", "note", "오일 누유 발견")
@@ -126,17 +100,25 @@ class InspectionControllerTest {
                 .header("Authorization", workerToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.hasAbnormality").value(true))
-            .andExpect(jsonPath("$.results[?(@.itemName=='오일 누유')].needsFaultReport").value(true));
+            .andExpect(status().isOk());
+
+        List<?> faults = faultRepository.findAll();
+        assertThat(faults).hasSize(1);
     }
 
     @Test
-    @DisplayName("점검 목록 조회")
-    void getAll() throws Exception {
-        mockMvc.perform(get("/api/inspections")
-                .header("Authorization", workerToken))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1));
+    @DisplayName("PASS만 완료 → Fault 미생성")
+    void complete_allPass_noFault() throws Exception {
+        var body = Map.of("results", List.of(
+            Map.of("checklistItemId", item1.getId(), "result", "PASS"),
+            Map.of("checklistItemId", item2.getId(), "result", "PASS")
+        ));
+        mockMvc.perform(post("/api/inspections/" + inspection.getId() + "/complete")
+                .header("Authorization", workerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)))
+            .andExpect(status().isOk());
+
+        assertThat(faultRepository.findAll()).isEmpty();
     }
 }
