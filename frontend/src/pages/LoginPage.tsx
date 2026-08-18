@@ -1,20 +1,17 @@
 import { useForm } from 'react-hook-form'
 import { useNavigate, Link } from 'react-router-dom'
+import { Factory, Eye, EyeOff } from 'lucide-react'
+import { useState } from 'react'
 import axiosInstance from '../api/axiosInstance'
+import { Button } from '../components/ui/button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card'
 
-type LoginForm = {
-  loginId: string
-  password: string
-}
+type LoginForm = { loginId: string; password: string }
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginForm>()
+  const [showPw, setShowPw] = useState(false)
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<LoginForm>()
 
   const onSubmit = async (data: LoginForm) => {
     try {
@@ -30,66 +27,62 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <span className="text-4xl">⚙️</span>
-          <h1 className="mt-3 text-2xl font-bold text-blue-400">FactoryCare</h1>
-          <p className="mt-1 text-sm text-slate-400">설비 유지보수 관리 시스템</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm space-y-6">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary rounded-xl mb-2">
+            <Factory className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">FactoryCare</h1>
+          <p className="text-slate-400 text-sm">설비 유지보수 관리 시스템</p>
         </div>
-
-        <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700">
-          <h2 className="text-lg font-semibold mb-6">로그인</h2>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-sm text-slate-400 mb-1.5">아이디</label>
-              <input
-                {...register('loginId', { required: '아이디를 입력하세요.' })}
-                autoComplete="username"
-                placeholder="아이디를 입력하세요"
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-              {errors.loginId && (
-                <p className="text-red-400 text-xs mt-1">{errors.loginId.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm text-slate-400 mb-1.5">비밀번호</label>
-              <input
-                type="password"
-                {...register('password', { required: '비밀번호를 입력하세요.' })}
-                autoComplete="current-password"
-                placeholder="비밀번호를 입력하세요"
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-              {errors.password && (
-                <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>
-              )}
-            </div>
-
-            {errors.root && (
-              <div className="px-4 py-2.5 rounded-lg bg-red-900/30 border border-red-700 text-red-400 text-sm text-center">
-                {errors.root.message}
+        <Card className="border-white/10 bg-white/5 backdrop-blur text-white">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">로그인</CardTitle>
+            <CardDescription className="text-slate-400">계정 정보를 입력해주세요</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-300">아이디</label>
+                <input
+                  {...register('loginId', { required: '아이디를 입력하세요.' })}
+                  placeholder="아이디를 입력하세요"
+                  autoComplete="username"
+                  className="w-full h-10 px-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-sm"
+                />
+                {errors.loginId && <p className="text-red-400 text-xs">{errors.loginId.message}</p>}
               </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-2 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? '로그인 중...' : '로그인'}
-            </button>
-          </form>
-        </div>
-
-        <p className="text-center text-sm text-slate-500 mt-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-300">비밀번호</label>
+                <div className="relative">
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    {...register('password', { required: '비밀번호를 입력하세요.' })}
+                    placeholder="비밀번호를 입력하세요"
+                    autoComplete="current-password"
+                    className="w-full h-10 px-3 pr-10 rounded-lg bg-white/10 border border-white/20 text-white placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-sm"
+                  />
+                  <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-red-400 text-xs">{errors.password.message}</p>}
+              </div>
+              {errors.root && (
+                <div className="px-3 py-2.5 rounded-lg bg-red-900/30 border border-red-700/50 text-red-400 text-sm text-center">
+                  {errors.root.message}
+                </div>
+              )}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? '로그인 중...' : '로그인'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+        <p className="text-center text-sm text-slate-500">
           계정이 없으신가요?{' '}
-          <Link to="/register" className="text-blue-400 hover:underline">
-            계정 등록
-          </Link>
+          <Link to="/register" className="text-blue-400 hover:text-blue-300 hover:underline font-medium">계정 등록</Link>
         </p>
       </div>
     </div>
