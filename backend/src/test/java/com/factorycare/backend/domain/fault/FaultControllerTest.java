@@ -4,6 +4,10 @@ import com.factorycare.backend.domain.equipment.entity.Equipment;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
 import com.factorycare.backend.domain.fault.entity.*;
 import com.factorycare.backend.domain.fault.repository.FaultRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionResultRepository;
+import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
+import com.factorycare.backend.domain.maintenance.repository.MaintenanceRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
@@ -35,6 +39,10 @@ class FaultControllerTest {
     @Autowired UserRepository userRepository;
     @Autowired EquipmentRepository equipmentRepository;
     @Autowired FaultRepository faultRepository;
+    @Autowired MaintenanceRepository maintenanceRepository;
+    @Autowired InspectionResultRepository resultRepository;
+    @Autowired InspectionRepository inspectionRepository;
+    @Autowired InspectionScheduleRepository scheduleRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -44,7 +52,11 @@ class FaultControllerTest {
 
     @BeforeEach
     void setUp() {
+        maintenanceRepository.deleteAll();
         faultRepository.deleteAll();
+        resultRepository.deleteAll();
+        inspectionRepository.deleteAll();
+        scheduleRepository.deleteAll();
         equipmentRepository.deleteAll();
         userRepository.deleteAll();
 
