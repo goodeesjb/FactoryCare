@@ -14,6 +14,9 @@ import InspectionDetailPage from '../pages/inspection/InspectionDetailPage'
 import FaultListPage from '../pages/fault/FaultListPage'
 import FaultCreatePage from '../pages/fault/FaultCreatePage'
 import FaultDetailPage from '../pages/fault/FaultDetailPage'
+import MaintenanceListPage from '../pages/maintenance/MaintenanceListPage'
+import MaintenanceCreatePage from '../pages/maintenance/MaintenanceCreatePage'
+import MaintenanceDetailPage from '../pages/maintenance/MaintenanceDetailPage'
 
 const router = createBrowserRouter([
   {
@@ -75,6 +78,18 @@ const router = createBrowserRouter([
   {
     path: '/faults/:id',
     element: <FaultDetailPage />,
+  },
+  {
+    path: '/maintenance',
+    element: <MaintenanceListPage />,
+  },
+  {
+    path: '/maintenance/new',
+    element: <MaintenanceCreatePage />,
+  },
+  {
+    path: '/maintenance/:id',
+    element: <MaintenanceDetailPage />,
   },
   {
     path: '*',

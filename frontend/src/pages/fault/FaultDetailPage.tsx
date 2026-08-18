@@ -41,6 +41,12 @@ export default function FaultDetailPage() {
         </div>
         <div className="flex gap-2">
           <button
+            onClick={() => navigate(`/maintenance/new?faultId=${fault.id}`)}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            정비작업 생성
+          </button>
+          <button
             onClick={() => setShowStatusModal(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
