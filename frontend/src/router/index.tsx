@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom'
+import Layout from '../components/Layout'
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
@@ -33,63 +34,63 @@ const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <DashboardPage />,
+    element: <Layout><DashboardPage /></Layout>,
   },
   {
     path: '/equipments',
-    element: <EquipmentListPage />,
+    element: <Layout><EquipmentListPage /></Layout>,
   },
   {
     path: '/equipments/new',
-    element: <EquipmentFormPage />,
+    element: <Layout><EquipmentFormPage /></Layout>,
   },
   {
     path: '/equipments/:id',
-    element: <EquipmentDetailPage />,
+    element: <Layout><EquipmentDetailPage /></Layout>,
   },
   {
     path: '/equipments/:id/edit',
-    element: <EquipmentFormPage />,
+    element: <Layout><EquipmentFormPage /></Layout>,
   },
   {
     path: '/inspection-checklists',
-    element: <InspectionChecklistPage />,
+    element: <Layout><InspectionChecklistPage /></Layout>,
   },
   {
     path: '/inspection-schedules',
-    element: <InspectionScheduleListPage />,
+    element: <Layout><InspectionScheduleListPage /></Layout>,
   },
   {
     path: '/inspection-schedules/new',
-    element: <InspectionScheduleFormPage />,
+    element: <Layout><InspectionScheduleFormPage /></Layout>,
   },
   {
     path: '/inspections/:id',
-    element: <InspectionDetailPage />,
+    element: <Layout><InspectionDetailPage /></Layout>,
   },
   {
     path: '/faults',
-    element: <FaultListPage />,
+    element: <Layout><FaultListPage /></Layout>,
   },
   {
     path: '/faults/new',
-    element: <FaultCreatePage />,
+    element: <Layout><FaultCreatePage /></Layout>,
   },
   {
     path: '/faults/:id',
-    element: <FaultDetailPage />,
+    element: <Layout><FaultDetailPage /></Layout>,
   },
   {
     path: '/maintenance',
-    element: <MaintenanceListPage />,
+    element: <Layout><MaintenanceListPage /></Layout>,
   },
   {
     path: '/maintenance/new',
-    element: <MaintenanceCreatePage />,
+    element: <Layout><MaintenanceCreatePage /></Layout>,
   },
   {
     path: '/maintenance/:id',
-    element: <MaintenanceDetailPage />,
+    element: <Layout><MaintenanceDetailPage /></Layout>,
   },
   {
     path: '*',

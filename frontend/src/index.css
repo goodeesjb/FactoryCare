@@ -1,1 +1,84 @@
 @import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --primary: oklch(0.45 0.15 259);
+  --primary-foreground: oklch(0.98 0.001 0);
+  --secondary: oklch(0.93 0.002 0);
+  --secondary-foreground: oklch(0.25 0.01 259);
+  --accent: oklch(0.55 0.12 200);
+  --accent-foreground: oklch(0.98 0.001 0);
+  --destructive: oklch(0.58 0.22 29);
+  --destructive-foreground: oklch(0.98 0.001 0);
+  --muted: oklch(0.92 0.002 0);
+  --muted-foreground: oklch(0.5 0.01 259);
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.2 0.01 259);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.01 259);
+  --border: oklch(0.92 0.002 0);
+  --input: oklch(0.96 0.001 0);
+  --ring: oklch(0.45 0.15 259);
+  --sidebar: oklch(0.97 0.001 0);
+  --sidebar-foreground: oklch(0.25 0.01 259);
+  --sidebar-border: oklch(0.88 0.002 0);
+  --sidebar-accent: oklch(0.93 0.002 0);
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+}
+
+@layer components {
+  .badge-status-green {
+    @apply inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700;
+  }
+  .badge-status-yellow {
+    @apply inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-700;
+  }
+  .badge-status-red {
+    @apply inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700;
+  }
+  .badge-status-blue {
+    @apply inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700;
+  }
+  .badge-status-gray {
+    @apply inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600;
+  }
+  .badge-status-orange {
+    @apply inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-700;
+  }
+}
