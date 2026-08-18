@@ -117,7 +117,7 @@ public class MaintenanceService {
     public void delete(Long id) {
         MaintenanceTask task = getTask(id);
         if (task.getStatus() == MaintenanceStatus.COMPLETED) {
-            throw new IllegalArgumentException("완료된 작업은 삭제할 수 없습니다.");
+            throw new IllegalStateException("완료된 작업은 삭제할 수 없습니다.");
         }
         maintenanceRepository.delete(task);
     }

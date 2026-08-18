@@ -234,4 +234,28 @@ class MaintenanceControllerTest {
                 .header("Authorization", adminToken))
             .andExpect(status().isNoContent());
     }
+
+    @Test
+    @DisplayName("COMPLETED 작업 삭제 시도 → 409")
+    void delete_completed_409() throws Exception {
+        MaintenanceTask task = maintenanceRepository.save(MaintenanceTask.builder()
+            .taskNo("MT-2026-007").equipment(equipment).title("완료된작업")
+            .taskType(MaintenanceType.REPAIR).createdBy(worker).build());
+
+        mockMvc.perform(post("/api/maintenance/" + task.getId() + "/start")
+                .header("Authorization", workerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("content", "시작"))))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/maintenance/" + task.getId() + "/complete")
+                .header("Authorization", workerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("content", "완료"))))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/api/maintenance/" + task.getId())
+                .header("Authorization", adminToken))
+            .andExpect(status().isConflict());
+    }
 }
