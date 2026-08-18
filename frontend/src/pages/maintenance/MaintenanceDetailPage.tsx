@@ -4,11 +4,28 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { maintenanceApi } from '../../api/maintenance'
 import {
   MAINTENANCE_STATUS_LABELS,
-  MAINTENANCE_STATUS_COLORS,
   MAINTENANCE_PRIORITY_LABELS,
-  MAINTENANCE_PRIORITY_COLORS,
   MAINTENANCE_TYPE_LABELS,
+  type MaintenanceStatus,
+  type MaintenancePriority,
 } from '../../types/maintenance'
+import { Button } from '../../components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../components/ui/card'
+import { Badge } from '../../components/ui/badge'
+
+const statusVariant: Record<MaintenanceStatus, 'warning' | 'info' | 'success' | 'secondary'> = {
+  PENDING: 'warning',
+  IN_PROGRESS: 'info',
+  COMPLETED: 'success',
+  CANCELLED: 'secondary',
+}
+
+const priorityVariant: Record<MaintenancePriority, 'secondary' | 'warning' | 'orange' | 'destructive'> = {
+  LOW: 'secondary',
+  MEDIUM: 'warning',
+  HIGH: 'orange',
+  CRITICAL: 'destructive',
+}
 
 export default function MaintenanceDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -30,7 +47,11 @@ export default function MaintenanceDetailPage() {
 
   const startMutation = useMutation({
     mutationFn: () => maintenanceApi.start(Number(id), { content: startContent }),
-    onSuccess: () => { setShowStartModal(false); setStartContent(''); invalidate() },
+    onSuccess: () => {
+      setShowStartModal(false)
+      setStartContent('')
+      invalidate()
+    },
   })
 
   const completeMutation = useMutation({
@@ -39,7 +60,12 @@ export default function MaintenanceDetailPage() {
         content: completeContent,
         durationMinutes: durationMinutes ? Number(durationMinutes) : undefined,
       }),
-    onSuccess: () => { setShowCompleteModal(false); setCompleteContent(''); setDurationMinutes(''); invalidate() },
+    onSuccess: () => {
+      setShowCompleteModal(false)
+      setCompleteContent('')
+      setDurationMinutes('')
+      invalidate()
+    },
   })
 
   const cancelMutation = useMutation({
@@ -52,194 +78,249 @@ export default function MaintenanceDetailPage() {
     onSuccess: () => navigate('/maintenance'),
   })
 
-  if (isLoading) return <p className="p-6">로딩 중...</p>
-  if (!task) return <p className="p-6">작업을 찾을 수 없습니다.</p>
+  if (isLoading) return <p className="p-6 text-muted-foreground">로딩 중...</p>
+  if (!task) return <p className="p-6 text-muted-foreground">작업을 찾을 수 없습니다.</p>
 
   const isPending = task.status === 'PENDING'
   const isInProgress = task.status === 'IN_PROGRESS'
   const isDone = task.status === 'COMPLETED' || task.status === 'CANCELLED'
 
+  const inputCls =
+    'h-9 w-full rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors'
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <p className="text-sm text-gray-500 font-mono mb-1">{task.taskNo}</p>
-          <h1 className="text-2xl font-bold">{task.title}</h1>
-          <p className="text-gray-500 text-sm mt-1">{task.equipmentName}</p>
+      {/* 헤더 */}
+      <div className="flex justify-between items-start mb-6 gap-4">
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground font-mono mb-1">{task.taskNo}</p>
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <Badge variant={statusVariant[task.status]}>
+              {MAINTENANCE_STATUS_LABELS[task.status]}
+            </Badge>
+            <Badge variant={priorityVariant[task.priority]}>
+              {MAINTENANCE_PRIORITY_LABELS[task.priority]}
+            </Badge>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">{task.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{task.equipmentName}</p>
         </div>
-        <div className="flex gap-2 flex-wrap justify-end">
+        <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
           {isPending && (
-            <button
-              onClick={() => setShowStartModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >작업 시작</button>
+            <Button onClick={() => setShowStartModal(true)}>작업 시작</Button>
           )}
           {isInProgress && (
-            <button
+            <Button
+              className="bg-green-600 text-white hover:bg-green-700"
               onClick={() => setShowCompleteModal(true)}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >작업 완료</button>
+            >
+              작업 완료
+            </Button>
           )}
           {!isDone && (
-            <button
-              onClick={() => { if (confirm('취소하시겠습니까?')) cancelMutation.mutate() }}
-              className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
-            >취소</button>
+            <Button
+              className="bg-orange-500 text-white hover:bg-orange-600"
+              onClick={() => {
+                if (confirm('취소하시겠습니까?')) cancelMutation.mutate()
+              }}
+            >
+              취소
+            </Button>
           )}
           {isPending && (
-            <button
-              onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMutation.mutate() }}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            >삭제</button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (confirm('삭제하시겠습니까?')) deleteMutation.mutate()
+              }}
+            >
+              삭제
+            </Button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded">
-        <div>
-          <span className="text-sm text-gray-500">상태</span>
-          <p>
-            <span className={`px-2 py-1 rounded text-xs font-medium ${MAINTENANCE_STATUS_COLORS[task.status]}`}>
-              {MAINTENANCE_STATUS_LABELS[task.status]}
-            </span>
-          </p>
-        </div>
-        <div>
-          <span className="text-sm text-gray-500">우선순위</span>
-          <p>
-            <span className={`px-2 py-1 rounded text-xs font-medium ${MAINTENANCE_PRIORITY_COLORS[task.priority]}`}>
-              {MAINTENANCE_PRIORITY_LABELS[task.priority]}
-            </span>
-          </p>
-        </div>
-        <div>
-          <span className="text-sm text-gray-500">작업 유형</span>
-          <p className="font-medium">{MAINTENANCE_TYPE_LABELS[task.taskType]}</p>
-        </div>
-        <div>
-          <span className="text-sm text-gray-500">담당자</span>
-          <p className="font-medium">{task.assigneeName ?? '-'}</p>
-        </div>
-        <div>
-          <span className="text-sm text-gray-500">예정일</span>
-          <p>{task.scheduledDate ?? '-'}</p>
-        </div>
-        <div>
-          <span className="text-sm text-gray-500">등록자</span>
-          <p>{task.createdByName}</p>
-        </div>
-        {task.faultId && (
-          <div className="col-span-2">
-            <span className="text-sm text-gray-500">연관 장애</span>
-            <p>
-              <Link to={`/faults/${task.faultId}`} className="text-blue-600 hover:underline">
-                장애 #{task.faultId} 보기
-              </Link>
-            </p>
+      {/* 정보 카드 */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>작업 정보</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">상태</p>
+              <Badge variant={statusVariant[task.status]}>
+                {MAINTENANCE_STATUS_LABELS[task.status]}
+              </Badge>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">우선순위</p>
+              <Badge variant={priorityVariant[task.priority]}>
+                {MAINTENANCE_PRIORITY_LABELS[task.priority]}
+              </Badge>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">작업 유형</p>
+              <p className="text-sm font-medium">{MAINTENANCE_TYPE_LABELS[task.taskType]}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">담당자</p>
+              <p className="text-sm font-medium">{task.assigneeName ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">예정일</p>
+              <p className="text-sm">{task.scheduledDate ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">등록자</p>
+              <p className="text-sm">{task.createdByName}</p>
+            </div>
+            {task.faultId && (
+              <div className="col-span-2">
+                <p className="text-xs text-muted-foreground mb-1">연관 장애</p>
+                <Link
+                  to={`/faults/${task.faultId}`}
+                  className="text-sm text-primary hover:underline"
+                >
+                  장애 #{task.faultId} 보기
+                </Link>
+              </div>
+            )}
+            {task.completedAt && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">완료일시</p>
+                <p className="text-sm">{new Date(task.completedAt).toLocaleString('ko-KR')}</p>
+              </div>
+            )}
           </div>
-        )}
-        {task.completedAt && (
-          <div>
-            <span className="text-sm text-gray-500">완료일시</span>
-            <p>{new Date(task.completedAt).toLocaleString('ko-KR')}</p>
-          </div>
-        )}
-      </div>
 
-      {task.description && (
-        <div className="mb-6">
-          <h2 className="font-semibold mb-2">설명</h2>
-          <p className="text-gray-700 whitespace-pre-wrap">{task.description}</p>
-        </div>
-      )}
+          {task.description && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-xs text-muted-foreground mb-2">설명</p>
+              <p className="text-sm text-foreground whitespace-pre-wrap">{task.description}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      <div>
-        <h2 className="font-semibold mb-3">작업 이력</h2>
-        {task.histories.length === 0 ? (
-          <p className="text-gray-500">이력이 없습니다.</p>
-        ) : (
-          <ul className="space-y-3">
-            {task.histories.map(h => (
-              <li
-                key={h.id}
-                className={`border-l-4 pl-4 py-2 ${h.type === 'START' ? 'border-blue-400' : 'border-green-400'}`}
-              >
-                <div className="flex items-center gap-2 text-sm mb-1 flex-wrap">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${h.type === 'START' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                    {h.type === 'START' ? '시작' : '완료'}
-                  </span>
-                  <span className="text-gray-500">by {h.recordedByName}</span>
-                  {h.durationMinutes && (
-                    <span className="text-gray-500">· {h.durationMinutes}분 소요</span>
-                  )}
-                  <span className="text-gray-400 ml-auto">
-                    {new Date(h.recordedAt).toLocaleString('ko-KR')}
-                  </span>
-                </div>
-                <p className="text-gray-700 text-sm">{h.content}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* 작업 이력 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>작업 이력</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {task.histories.length === 0 ? (
+            <p className="text-sm text-muted-foreground">이력이 없습니다.</p>
+          ) : (
+            <ul className="space-y-3">
+              {task.histories.map((h) => (
+                <li
+                  key={h.id}
+                  className={`border-l-4 pl-4 py-2 ${
+                    h.type === 'START' ? 'border-blue-400' : 'border-green-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-sm mb-1 flex-wrap">
+                    <span
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        h.type === 'START'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}
+                    >
+                      {h.type === 'START' ? '시작' : '완료'}
+                    </span>
+                    <span className="text-muted-foreground text-xs">by {h.recordedByName}</span>
+                    {h.durationMinutes && (
+                      <span className="text-muted-foreground text-xs">· {h.durationMinutes}분 소요</span>
+                    )}
+                    <span className="text-muted-foreground/60 text-xs ml-auto">
+                      {new Date(h.recordedAt).toLocaleString('ko-KR')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-foreground">{h.content}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
 
+      {/* 작업 시작 모달 */}
       {showStartModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">작업 시작</h2>
-            <textarea
-              value={startContent}
-              onChange={e => setStartContent(e.target.value)}
-              className="w-full border rounded px-3 py-2 mb-4"
-              rows={4}
-              placeholder="작업 시작 내용을 입력하세요 *"
-            />
-            <div className="flex gap-3">
-              <button
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md shadow-xl">
+            <CardHeader>
+              <CardTitle>작업 시작</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <textarea
+                value={startContent}
+                onChange={(e) => setStartContent(e.target.value)}
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors min-h-[80px] resize-none py-2"
+                placeholder="작업 시작 내용을 입력하세요 *"
+              />
+            </CardContent>
+            <CardFooter className="gap-3">
+              <Button
                 onClick={() => startMutation.mutate()}
                 disabled={!startContent.trim() || startMutation.isPending}
-                className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-              >시작</button>
-              <button
+                className="flex-1"
+              >
+                시작
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => setShowStartModal(false)}
-                className="flex-1 border py-2 rounded hover:bg-gray-50"
-              >취소</button>
-            </div>
-          </div>
+                className="flex-1"
+              >
+                취소
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       )}
 
+      {/* 작업 완료 모달 */}
       {showCompleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">작업 완료</h2>
-            <textarea
-              value={completeContent}
-              onChange={e => setCompleteContent(e.target.value)}
-              className="w-full border rounded px-3 py-2 mb-3"
-              rows={4}
-              placeholder="작업 결과 및 소견을 입력하세요 *"
-            />
-            <input
-              type="number"
-              value={durationMinutes}
-              onChange={e => setDurationMinutes(e.target.value)}
-              className="w-full border rounded px-3 py-2 mb-4"
-              placeholder="소요 시간 (분, 선택)"
-              min={1}
-            />
-            <div className="flex gap-3">
-              <button
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md shadow-xl">
+            <CardHeader>
+              <CardTitle>작업 완료</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <textarea
+                value={completeContent}
+                onChange={(e) => setCompleteContent(e.target.value)}
+                className="h-9 w-full rounded-lg border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors min-h-[80px] resize-none py-2"
+                placeholder="작업 결과 및 소견을 입력하세요 *"
+              />
+              <input
+                type="number"
+                value={durationMinutes}
+                onChange={(e) => setDurationMinutes(e.target.value)}
+                className={inputCls}
+                placeholder="소요 시간 (분, 선택)"
+                min={1}
+              />
+            </CardContent>
+            <CardFooter className="gap-3">
+              <Button
+                className="bg-green-600 text-white hover:bg-green-700 flex-1"
                 onClick={() => completeMutation.mutate()}
                 disabled={!completeContent.trim() || completeMutation.isPending}
-                className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50"
-              >완료</button>
-              <button
+              >
+                완료
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => setShowCompleteModal(false)}
-                className="flex-1 border py-2 rounded hover:bg-gray-50"
-              >취소</button>
-            </div>
-          </div>
+                className="flex-1"
+              >
+                취소
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       )}
     </div>
