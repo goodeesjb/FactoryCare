@@ -242,4 +242,32 @@ class PartControllerTest {
                 .header("Authorization", workerToken))
             .andExpect(jsonPath("$.stockQuantity").value(100));
     }
+
+    @Test
+    @DisplayName("취소된 작업의 부품 사용 이력 삭제 → 409")
+    void deletePartUsage_onCancelledTask_409() throws Exception {
+        Part part = partRepository.save(Part.builder()
+            .partNo("PT-2026-099").name("테스트부품")
+            .stockQuantity(100).minimumStock(0).build());
+
+        // task를 IN_PROGRESS로 전환 후 취소
+        var startBody = Map.of("content", "시작");
+        mockMvc.perform(post("/api/maintenance/" + task.getId() + "/start")
+                .header("Authorization", workerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(startBody)))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/maintenance/" + task.getId() + "/cancel")
+                .header("Authorization", managerToken))
+            .andExpect(status().isOk());
+
+        // 취소된 작업에 부품 추가 → 409
+        var body = Map.of("partId", part.getId(), "quantity", 1);
+        mockMvc.perform(post("/api/maintenance/" + task.getId() + "/parts")
+                .header("Authorization", workerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)))
+            .andExpect(status().isConflict());
+    }
 }

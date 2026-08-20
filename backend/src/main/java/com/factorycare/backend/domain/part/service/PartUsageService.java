@@ -76,8 +76,9 @@ public class PartUsageService {
         if (!usage.getMaintenanceTask().getId().equals(maintenanceId)) {
             throw new IllegalArgumentException("해당 유지보수 작업의 이력이 아닙니다.");
         }
-        if (usage.getMaintenanceTask().getStatus() == MaintenanceStatus.COMPLETED) {
-            throw new IllegalStateException("완료된 작업의 부품 사용 이력은 삭제할 수 없습니다.");
+        if (usage.getMaintenanceTask().getStatus() == MaintenanceStatus.COMPLETED
+                || usage.getMaintenanceTask().getStatus() == MaintenanceStatus.CANCELLED) {
+            throw new IllegalStateException("완료 또는 취소된 작업의 부품 사용 이력은 삭제할 수 없습니다.");
         }
         usage.getPart().increaseStock(usage.getQuantity());
         partUsageRepository.delete(usage);
