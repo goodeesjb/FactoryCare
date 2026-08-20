@@ -21,6 +21,7 @@ import MaintenanceDetailPage from '../pages/maintenance/MaintenanceDetailPage'
 import PartListPage from '../pages/parts/PartListPage'
 import PartFormPage from '../pages/parts/PartFormPage'
 import PartDetailPage from '../pages/parts/PartDetailPage'
+import UserListPage from '../pages/user/UserListPage'
 
 const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
   { path: '/parts/new', element: <Layout><PartFormPage /></Layout> },
   { path: '/parts/:id', element: <Layout><PartDetailPage /></Layout> },
   { path: '/parts/:id/edit', element: <Layout><PartFormPage /></Layout> },
+  { path: '/users', element: <Layout><UserListPage /></Layout> },
   { path: '*', element: <NotFoundPage /> },
 ])
 
