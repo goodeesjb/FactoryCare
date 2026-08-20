@@ -49,7 +49,7 @@ export default function MaintenanceDetailPage() {
     queryFn: () => maintenanceApi.getById(Number(id)),
   })
 
-  const { data: partUsages, refetch: refetchUsages } = useQuery({
+  const { data: partUsages } = useQuery({
     queryKey: ['maintenance', id, 'parts'],
     queryFn: () => partUsageApi.list(Number(id)),
     enabled: !!id,
@@ -102,13 +102,13 @@ export default function MaintenanceDetailPage() {
       setPartQuantity(1)
       setPartNote('')
       setPartKeyword('')
-      refetchUsages()
+      queryClient.invalidateQueries({ queryKey: ['maintenance', id, 'parts'] })
     },
   })
 
   const removePartMutation = useMutation({
     mutationFn: (usageId: number) => partUsageApi.delete(Number(id), usageId),
-    onSuccess: () => refetchUsages(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['maintenance', id, 'parts'] }),
   })
 
   if (isLoading) return <p className="p-6 text-muted-foreground">로딩 중...</p>
