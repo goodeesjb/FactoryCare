@@ -2,6 +2,7 @@ package com.factorycare.backend.domain.user.controller;
 
 import com.factorycare.backend.domain.user.dto.UserCreateRequest;
 import com.factorycare.backend.domain.user.dto.UserResponse;
+import com.factorycare.backend.domain.user.dto.UserRoleUpdateRequest;
 import com.factorycare.backend.domain.user.dto.UserUpdateRequest;
 import com.factorycare.backend.domain.user.service.UserService;
 import jakarta.validation.Valid;
@@ -46,6 +47,13 @@ public class UserController {
     public ResponseEntity<UserResponse> update(@PathVariable Long id,
                                                @Valid @RequestBody UserUpdateRequest request) {
         return ResponseEntity.ok(userService.update(id, request));
+    }
+
+    @PatchMapping("/{id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> changeRole(@PathVariable Long id,
+                                                    @Valid @RequestBody UserRoleUpdateRequest request) {
+        return ResponseEntity.ok(userService.changeRole(id, request.role()));
     }
 
     @DeleteMapping("/{id}")

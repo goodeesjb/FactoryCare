@@ -65,6 +65,10 @@ public class User {
         this.password = encodedPassword;
     }
 
+    public void changeRole(UserRole role) {
+        this.role = role;
+    }
+
     public void deactivate() {
         this.active = false;
     }
