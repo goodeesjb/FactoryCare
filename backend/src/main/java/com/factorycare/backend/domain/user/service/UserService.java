@@ -4,6 +4,7 @@ import com.factorycare.backend.domain.user.dto.UserCreateRequest;
 import com.factorycare.backend.domain.user.dto.UserResponse;
 import com.factorycare.backend.domain.user.dto.UserUpdateRequest;
 import com.factorycare.backend.domain.user.entity.User;
+import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,20 @@ public class UserService {
         if (StringUtils.hasText(request.password())) {
             user.changePassword(passwordEncoder.encode(request.password()));
         }
+        return UserResponse.from(user);
+    }
+
+    @Transactional
+    public UserResponse changeRole(Long id, UserRole role) {
+        User user = getUser(id);
+        user.changeRole(role);
+        return UserResponse.from(user);
+    }
+
+    @Transactional
+    public UserResponse changeRole(Long id, UserRole role) {
+        User user = getUser(id);
+        user.changeRole(role);
         return UserResponse.from(user);
     }
 
