@@ -6,6 +6,7 @@ import {
   ClipboardList,
   AlertTriangle,
   Settings,
+  Package,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -19,6 +20,7 @@ const navItems = [
   { icon: ClipboardList, label: '점검관리', path: '/inspection-schedules' },
   { icon: AlertTriangle, label: '장애관리', path: '/faults' },
   { icon: Settings, label: '유지보수', path: '/maintenance' },
+  { icon: Package, label: '부품관리', path: '/parts' },
 ]
 
 interface LayoutProps {
