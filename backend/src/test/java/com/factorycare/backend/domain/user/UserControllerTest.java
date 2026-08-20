@@ -7,6 +7,7 @@ import com.factorycare.backend.domain.inspection.repository.InspectionRepository
 import com.factorycare.backend.domain.inspection.repository.InspectionScheduleRepository;
 import com.factorycare.backend.domain.maintenance.repository.MaintenanceHistoryRepository;
 import com.factorycare.backend.domain.maintenance.repository.MaintenanceRepository;
+import com.factorycare.backend.domain.part.repository.PartUsageRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
@@ -43,6 +44,7 @@ class UserControllerTest {
     @Autowired InspectionScheduleRepository inspectionScheduleRepository;
     @Autowired MaintenanceHistoryRepository maintenanceHistoryRepository;
     @Autowired MaintenanceRepository maintenanceRepository;
+    @Autowired PartUsageRepository partUsageRepository;
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
@@ -50,6 +52,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
+        partUsageRepository.deleteAll();
         maintenanceHistoryRepository.deleteAll();
         maintenanceRepository.deleteAll();
         faultRepository.deleteAll();
