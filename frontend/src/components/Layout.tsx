@@ -4,9 +4,11 @@ import {
   LayoutDashboard,
   Wrench,
   ClipboardList,
+  ClipboardCheck,
   AlertTriangle,
   Settings,
   Package,
+  Users,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -18,9 +20,14 @@ const navItems = [
   { icon: LayoutDashboard, label: '대시보드', path: '/dashboard' },
   { icon: Wrench, label: '설비관리', path: '/equipments' },
   { icon: ClipboardList, label: '점검관리', path: '/inspection-schedules' },
+  { icon: ClipboardCheck, label: '체크리스트', path: '/inspection-checklists' },
   { icon: AlertTriangle, label: '장애관리', path: '/faults' },
   { icon: Settings, label: '유지보수', path: '/maintenance' },
   { icon: Package, label: '부품관리', path: '/parts' },
+]
+
+const adminNavItems = [
+  { icon: Users, label: '회원 관리', path: '/users' },
 ]
 
 interface LayoutProps {
@@ -66,7 +73,7 @@ export default function Layout({ children }: LayoutProps) {
 
         {/* Nav */}
         <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
+          {[...navItems, ...(role === 'ADMIN' ? adminNavItems : [])].map((item) => {
             const isActive =
               item.path === '/dashboard'
                 ? location.pathname === '/dashboard'
@@ -132,7 +139,7 @@ export default function Layout({ children }: LayoutProps) {
         {/* Top bar */}
         <header className="flex items-center h-16 px-6 border-b border-border bg-card shrink-0">
           <h2 className="text-base font-semibold text-foreground">
-            {navItems.find((n) =>
+            {[...navItems, ...adminNavItems].find((n) =>
               n.path === '/dashboard'
                 ? location.pathname === '/dashboard'
                 : location.pathname.startsWith(n.path)
