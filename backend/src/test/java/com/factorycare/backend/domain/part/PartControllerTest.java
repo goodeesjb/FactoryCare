@@ -45,8 +45,8 @@ class PartControllerTest {
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired JwtProvider jwtProvider;
 
-    String adminToken, managerToken, workerToken;
-    User worker, manager;
+    String adminToken, managerToken, workerToken, worker2Token;
+    User worker, worker2, manager;
     Equipment equipment;
     MaintenanceTask task;
 
@@ -67,10 +67,14 @@ class PartControllerTest {
         worker = userRepository.save(User.builder()
             .loginId("worker01").password(passwordEncoder.encode("pw"))
             .name("작업자").role(UserRole.WORKER).build());
+        worker2 = userRepository.save(User.builder()
+            .loginId("worker02").password(passwordEncoder.encode("pw"))
+            .name("작업자2").role(UserRole.WORKER).build());
 
         adminToken = "Bearer " + jwtProvider.generateAccessToken(admin.getId(), UserRole.ADMIN);
         managerToken = "Bearer " + jwtProvider.generateAccessToken(manager.getId(), UserRole.MANAGER);
         workerToken = "Bearer " + jwtProvider.generateAccessToken(worker.getId(), UserRole.WORKER);
+        worker2Token = "Bearer " + jwtProvider.generateAccessToken(worker2.getId(), UserRole.WORKER);
 
         equipment = equipmentRepository.save(
             Equipment.builder().equipmentNo("EQ-001").name("컨베이어").build());
@@ -241,6 +245,30 @@ class PartControllerTest {
         mockMvc.perform(get("/api/parts/" + part.getId())
                 .header("Authorization", workerToken))
             .andExpect(jsonPath("$.stockQuantity").value(100));
+    }
+
+    @Test
+    @DisplayName("다른 WORKER가 부품 사용 이력 삭제 시도 → 403")
+    void deletePartUsage_byOtherWorker_403() throws Exception {
+        Part part = partRepository.save(Part.builder()
+            .partNo("PT-2026-001").name("볼베어링")
+            .stockQuantity(100).minimumStock(10).build());
+
+        // worker가 부품 사용 등록
+        var body = Map.of("partId", part.getId(), "quantity", 3);
+        String response = mockMvc.perform(post("/api/maintenance/" + task.getId() + "/parts")
+                .header("Authorization", workerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)))
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString();
+
+        Long usageId = objectMapper.readTree(response).get("id").longValue();
+
+        // worker2가 worker의 사용 이력 삭제 시도 → 403
+        mockMvc.perform(delete("/api/maintenance/" + task.getId() + "/parts/" + usageId)
+                .header("Authorization", worker2Token))
+            .andExpect(status().isForbidden());
     }
 
     @Test

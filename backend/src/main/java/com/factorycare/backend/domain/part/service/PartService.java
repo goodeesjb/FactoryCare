@@ -3,6 +3,7 @@ package com.factorycare.backend.domain.part.service;
 import com.factorycare.backend.domain.part.dto.*;
 import com.factorycare.backend.domain.part.entity.Part;
 import com.factorycare.backend.domain.part.repository.PartRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,11 @@ public class PartService {
             .storageLocation(req.storageLocation())
             .description(req.description())
             .build();
-        return PartResponse.from(partRepository.save(part));
+        try {
+            return PartResponse.from(partRepository.save(part));
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("부품번호 생성 중 충돌이 발생했습니다. 다시 시도해주세요.");
+        }
     }
 
     @Transactional

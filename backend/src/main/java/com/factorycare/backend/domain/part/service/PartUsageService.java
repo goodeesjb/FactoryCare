@@ -11,6 +11,9 @@ import com.factorycare.backend.domain.part.repository.PartRepository;
 import com.factorycare.backend.domain.part.repository.PartUsageRepository;
 import com.factorycare.backend.domain.user.entity.User;
 import com.factorycare.backend.domain.user.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +73,7 @@ public class PartUsageService {
     }
 
     @Transactional
-    public void delete(Long maintenanceId, Long usageId) {
+    public void delete(Long maintenanceId, Long usageId, Long callerId) {
         PartUsage usage = partUsageRepository.findById(usageId)
             .orElseThrow(() -> new IllegalArgumentException("부품 사용 이력을 찾을 수 없습니다. id=" + usageId));
         if (!usage.getMaintenanceTask().getId().equals(maintenanceId)) {
@@ -80,6 +83,16 @@ public class PartUsageService {
                 || usage.getMaintenanceTask().getStatus() == MaintenanceStatus.CANCELLED) {
             throw new IllegalStateException("완료 또는 취소된 작업의 부품 사용 이력은 삭제할 수 없습니다.");
         }
+
+        boolean isCreator = usage.getUsedBy().getId().equals(callerId);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isPrivileged = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (!isCreator && !isPrivileged) {
+            throw new AccessDeniedException("본인이 등록한 부품 사용 이력만 삭제할 수 있습니다.");
+        }
+
         usage.getPart().increaseStock(usage.getQuantity());
         partUsageRepository.delete(usage);
     }

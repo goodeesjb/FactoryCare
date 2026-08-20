@@ -62,11 +62,11 @@ public class Part {
         this.description = description;
     }
 
-    public void update(String name, String manufacturer, int minimumStock,
+    public void update(String name, String manufacturer, Integer minimumStock,
                        String storageLocation, String description) {
         if (name != null) this.name = name;
         if (manufacturer != null) this.manufacturer = manufacturer;
-        this.minimumStock = minimumStock;
+        if (minimumStock != null) this.minimumStock = minimumStock;
         if (storageLocation != null) this.storageLocation = storageLocation;
         if (description != null) this.description = description;
     }

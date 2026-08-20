@@ -40,8 +40,9 @@ public class PartUsageController {
     @DeleteMapping("/{usageId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long maintenanceId,
-            @PathVariable Long usageId) {
-        partUsageService.delete(maintenanceId, usageId);
+            @PathVariable Long usageId,
+            @AuthenticationPrincipal Long callerId) {
+        partUsageService.delete(maintenanceId, usageId, callerId);
         return ResponseEntity.noContent().build();
     }
 }
