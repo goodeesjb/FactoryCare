@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { maintenanceApi } from '../../api/maintenance'
+import { partApi, partUsageApi } from '../../api/parts'
 import {
   MAINTENANCE_STATUS_LABELS,
   MAINTENANCE_PRIORITY_LABELS,
@@ -34,24 +35,39 @@ export default function MaintenanceDetailPage() {
 
   const [showStartModal, setShowStartModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
+  const [showAddPartModal, setShowAddPartModal] = useState(false)
   const [startContent, setStartContent] = useState('')
   const [completeContent, setCompleteContent] = useState('')
   const [durationMinutes, setDurationMinutes] = useState('')
+  const [partKeyword, setPartKeyword] = useState('')
+  const [selectedPartId, setSelectedPartId] = useState<number | ''>('')
+  const [partQuantity, setPartQuantity] = useState(1)
+  const [partNote, setPartNote] = useState('')
 
   const { data: task, isLoading } = useQuery({
     queryKey: ['maintenance', id],
     queryFn: () => maintenanceApi.getById(Number(id)),
   })
 
+  const { data: partUsages } = useQuery({
+    queryKey: ['maintenance', id, 'parts'],
+    queryFn: () => partUsageApi.list(Number(id)),
+    enabled: !!id,
+  })
+
+  const { data: partSearchResult } = useQuery({
+    queryKey: ['parts', 'search', partKeyword],
+    queryFn: () => partApi.search({ keyword: partKeyword || undefined, size: 20 }),
+    enabled: showAddPartModal,
+  })
+
+  const selectedPart = partSearchResult?.content.find((p) => p.id === selectedPartId)
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['maintenance', id] })
 
   const startMutation = useMutation({
     mutationFn: () => maintenanceApi.start(Number(id), { content: startContent }),
-    onSuccess: () => {
-      setShowStartModal(false)
-      setStartContent('')
-      invalidate()
-    },
+    onSuccess: () => { setShowStartModal(false); setStartContent(''); invalidate() },
   })
 
   const completeMutation = useMutation({
@@ -60,12 +76,7 @@ export default function MaintenanceDetailPage() {
         content: completeContent,
         durationMinutes: durationMinutes ? Number(durationMinutes) : undefined,
       }),
-    onSuccess: () => {
-      setShowCompleteModal(false)
-      setCompleteContent('')
-      setDurationMinutes('')
-      invalidate()
-    },
+    onSuccess: () => { setShowCompleteModal(false); setCompleteContent(''); setDurationMinutes(''); invalidate() },
   })
 
   const cancelMutation = useMutation({
@@ -76,6 +87,28 @@ export default function MaintenanceDetailPage() {
   const deleteMutation = useMutation({
     mutationFn: () => maintenanceApi.delete(Number(id)),
     onSuccess: () => navigate('/maintenance'),
+  })
+
+  const addPartMutation = useMutation({
+    mutationFn: () =>
+      partUsageApi.create(Number(id), {
+        partId: Number(selectedPartId),
+        quantity: partQuantity,
+        note: partNote || undefined,
+      }),
+    onSuccess: () => {
+      setShowAddPartModal(false)
+      setSelectedPartId('')
+      setPartQuantity(1)
+      setPartNote('')
+      setPartKeyword('')
+      queryClient.invalidateQueries({ queryKey: ['maintenance', id, 'parts'] })
+    },
+  })
+
+  const removePartMutation = useMutation({
+    mutationFn: (usageId: number) => partUsageApi.delete(Number(id), usageId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['maintenance', id, 'parts'] }),
   })
 
   if (isLoading) return <p className="p-6 text-muted-foreground">로딩 중...</p>
@@ -95,69 +128,47 @@ export default function MaintenanceDetailPage() {
         <div className="min-w-0">
           <p className="text-xs text-muted-foreground font-mono mb-1">{task.taskNo}</p>
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <Badge variant={statusVariant[task.status]}>
-              {MAINTENANCE_STATUS_LABELS[task.status]}
-            </Badge>
-            <Badge variant={priorityVariant[task.priority]}>
-              {MAINTENANCE_PRIORITY_LABELS[task.priority]}
-            </Badge>
+            <Badge variant={statusVariant[task.status]}>{MAINTENANCE_STATUS_LABELS[task.status]}</Badge>
+            <Badge variant={priorityVariant[task.priority]}>{MAINTENANCE_PRIORITY_LABELS[task.priority]}</Badge>
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{task.title}</h1>
           <p className="text-muted-foreground text-sm mt-1">{task.equipmentName}</p>
         </div>
         <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
-          {isPending && (
-            <Button onClick={() => setShowStartModal(true)}>작업 시작</Button>
-          )}
+          {isPending && <Button onClick={() => setShowStartModal(true)}>작업 시작</Button>}
           {isInProgress && (
             <Button
               className="bg-green-600 text-white hover:bg-green-700"
               onClick={() => setShowCompleteModal(true)}
-            >
-              작업 완료
-            </Button>
+            >작업 완료</Button>
           )}
           {!isDone && (
             <Button
               className="bg-orange-500 text-white hover:bg-orange-600"
-              onClick={() => {
-                if (confirm('취소하시겠습니까?')) cancelMutation.mutate()
-              }}
-            >
-              취소
-            </Button>
+              onClick={() => { if (confirm('취소하시겠습니까?')) cancelMutation.mutate() }}
+            >취소</Button>
           )}
           {isPending && (
             <Button
               variant="destructive"
-              onClick={() => {
-                if (confirm('삭제하시겠습니까?')) deleteMutation.mutate()
-              }}
-            >
-              삭제
-            </Button>
+              onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMutation.mutate() }}
+            >삭제</Button>
           )}
         </div>
       </div>
 
-      {/* 정보 카드 */}
+      {/* 작업 정보 */}
       <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>작업 정보</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>작업 정보</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-x-8 gap-y-4">
             <div>
               <p className="text-xs text-muted-foreground mb-1">상태</p>
-              <Badge variant={statusVariant[task.status]}>
-                {MAINTENANCE_STATUS_LABELS[task.status]}
-              </Badge>
+              <Badge variant={statusVariant[task.status]}>{MAINTENANCE_STATUS_LABELS[task.status]}</Badge>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">우선순위</p>
-              <Badge variant={priorityVariant[task.priority]}>
-                {MAINTENANCE_PRIORITY_LABELS[task.priority]}
-              </Badge>
+              <Badge variant={priorityVariant[task.priority]}>{MAINTENANCE_PRIORITY_LABELS[task.priority]}</Badge>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">작업 유형</p>
@@ -178,10 +189,7 @@ export default function MaintenanceDetailPage() {
             {task.faultId && (
               <div className="col-span-2">
                 <p className="text-xs text-muted-foreground mb-1">연관 장애</p>
-                <Link
-                  to={`/faults/${task.faultId}`}
-                  className="text-sm text-primary hover:underline"
-                >
+                <Link to={`/faults/${task.faultId}`} className="text-sm text-primary hover:underline">
                   장애 #{task.faultId} 보기
                 </Link>
               </div>
@@ -193,7 +201,6 @@ export default function MaintenanceDetailPage() {
               </div>
             )}
           </div>
-
           {task.description && (
             <div className="mt-6 pt-6 border-t border-border">
               <p className="text-xs text-muted-foreground mb-2">설명</p>
@@ -203,11 +210,69 @@ export default function MaintenanceDetailPage() {
         </CardContent>
       </Card>
 
+      {/* 사용 부품 */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>사용 부품</CardTitle>
+            {!isDone && (
+              <Button size="sm" onClick={() => setShowAddPartModal(true)}>부품 추가</Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!partUsages?.length ? (
+            <p className="text-sm text-muted-foreground">등록된 사용 부품이 없습니다.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="pb-2 text-left font-medium text-muted-foreground">부품명</th>
+                    <th className="pb-2 text-left font-medium text-muted-foreground">부품번호</th>
+                    <th className="pb-2 text-left font-medium text-muted-foreground">수량</th>
+                    <th className="pb-2 text-left font-medium text-muted-foreground">메모</th>
+                    <th className="pb-2 text-left font-medium text-muted-foreground">등록자</th>
+                    {!isDone && <th className="pb-2" />}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {partUsages.map((u) => (
+                    <tr key={u.id}>
+                      <td className="py-2">
+                        <Link to={`/parts/${u.partId}`} className="text-primary hover:underline">
+                          {u.partName}
+                        </Link>
+                      </td>
+                      <td className="py-2 font-mono text-xs text-muted-foreground">{u.partNo}</td>
+                      <td className="py-2 font-medium">{u.quantity}</td>
+                      <td className="py-2 text-muted-foreground">{u.note ?? '-'}</td>
+                      <td className="py-2 text-muted-foreground">{u.usedByName}</td>
+                      {!isDone && (
+                        <td className="py-2">
+                          <button
+                            onClick={() => {
+                              if (confirm('사용 취소 시 재고가 복구됩니다. 삭제하시겠습니까?'))
+                                removePartMutation.mutate(u.id)
+                            }}
+                            className="text-xs text-destructive hover:underline"
+                          >
+                            취소
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* 작업 이력 */}
       <Card>
-        <CardHeader>
-          <CardTitle>작업 이력</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>작업 이력</CardTitle></CardHeader>
         <CardContent>
           {task.histories.length === 0 ? (
             <p className="text-sm text-muted-foreground">이력이 없습니다.</p>
@@ -216,18 +281,10 @@ export default function MaintenanceDetailPage() {
               {task.histories.map((h) => (
                 <li
                   key={h.id}
-                  className={`border-l-4 pl-4 py-2 ${
-                    h.type === 'START' ? 'border-blue-400' : 'border-green-400'
-                  }`}
+                  className={`border-l-4 pl-4 py-2 ${h.type === 'START' ? 'border-blue-400' : 'border-green-400'}`}
                 >
                   <div className="flex items-center gap-2 text-sm mb-1 flex-wrap">
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        h.type === 'START'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}
-                    >
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${h.type === 'START' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
                       {h.type === 'START' ? '시작' : '완료'}
                     </span>
                     <span className="text-muted-foreground text-xs">by {h.recordedByName}</span>
@@ -250,9 +307,7 @@ export default function MaintenanceDetailPage() {
       {showStartModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md shadow-xl">
-            <CardHeader>
-              <CardTitle>작업 시작</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>작업 시작</CardTitle></CardHeader>
             <CardContent>
               <textarea
                 value={startContent}
@@ -262,20 +317,8 @@ export default function MaintenanceDetailPage() {
               />
             </CardContent>
             <CardFooter className="gap-3">
-              <Button
-                onClick={() => startMutation.mutate()}
-                disabled={!startContent.trim() || startMutation.isPending}
-                className="flex-1"
-              >
-                시작
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowStartModal(false)}
-                className="flex-1"
-              >
-                취소
-              </Button>
+              <Button onClick={() => startMutation.mutate()} disabled={!startContent.trim() || startMutation.isPending} className="flex-1">시작</Button>
+              <Button variant="outline" onClick={() => setShowStartModal(false)} className="flex-1">취소</Button>
             </CardFooter>
           </Card>
         </div>
@@ -285,9 +328,7 @@ export default function MaintenanceDetailPage() {
       {showCompleteModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md shadow-xl">
-            <CardHeader>
-              <CardTitle>작업 완료</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>작업 완료</CardTitle></CardHeader>
             <CardContent className="flex flex-col gap-4">
               <textarea
                 value={completeContent}
@@ -305,16 +346,81 @@ export default function MaintenanceDetailPage() {
               />
             </CardContent>
             <CardFooter className="gap-3">
+              <Button className="bg-green-600 text-white hover:bg-green-700 flex-1" onClick={() => completeMutation.mutate()} disabled={!completeContent.trim() || completeMutation.isPending}>완료</Button>
+              <Button variant="outline" onClick={() => setShowCompleteModal(false)} className="flex-1">취소</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
+
+      {/* 부품 추가 모달 */}
+      {showAddPartModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md shadow-xl">
+            <CardHeader><CardTitle>부품 추가</CardTitle></CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">부품 검색</label>
+                <input
+                  value={partKeyword}
+                  onChange={(e) => { setPartKeyword(e.target.value); setSelectedPartId('') }}
+                  className={inputCls}
+                  placeholder="부품명 또는 제조사"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">부품 선택 *</label>
+                <select
+                  value={selectedPartId}
+                  onChange={(e) => setSelectedPartId(Number(e.target.value))}
+                  className={inputCls}
+                >
+                  <option value="">부품을 선택하세요</option>
+                  {partSearchResult?.content.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.partNo}) — 재고: {p.stockQuantity}
+                    </option>
+                  ))}
+                </select>
+                {selectedPart && (
+                  <p className={`text-xs mt-1 ${selectedPart.stockStatus === 'OUT' ? 'text-destructive' : selectedPart.stockStatus === 'LOW' ? 'text-orange-500' : 'text-muted-foreground'}`}>
+                    현재 재고: {selectedPart.stockQuantity}개
+                    {selectedPart.stockStatus === 'LOW' && ' (부족)'}
+                    {selectedPart.stockStatus === 'OUT' && ' (소진)'}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">수량 *</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={partQuantity}
+                  onChange={(e) => setPartQuantity(Number(e.target.value))}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">메모</label>
+                <input
+                  value={partNote}
+                  onChange={(e) => setPartNote(e.target.value)}
+                  className={inputCls}
+                  placeholder="선택 사항"
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="gap-3">
               <Button
-                className="bg-green-600 text-white hover:bg-green-700 flex-1"
-                onClick={() => completeMutation.mutate()}
-                disabled={!completeContent.trim() || completeMutation.isPending}
+                onClick={() => addPartMutation.mutate()}
+                disabled={!selectedPartId || partQuantity < 1 || addPartMutation.isPending}
+                className="flex-1"
               >
-                완료
+                {addPartMutation.isPending ? '추가 중...' : '추가'}
               </Button>
               <Button
                 variant="outline"
-                onClick={() => setShowCompleteModal(false)}
+                onClick={() => { setShowAddPartModal(false); setSelectedPartId(''); setPartKeyword('') }}
                 className="flex-1"
               >
                 취소
