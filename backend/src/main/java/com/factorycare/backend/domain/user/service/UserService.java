@@ -70,13 +70,6 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse changeRole(Long id, UserRole role) {
-        User user = getUser(id);
-        user.changeRole(role);
-        return UserResponse.from(user);
-    }
-
-    @Transactional
     public void deactivate(Long id) {
         getUser(id).deactivate();
     }
