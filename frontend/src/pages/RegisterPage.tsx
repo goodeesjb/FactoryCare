@@ -22,6 +22,16 @@ const ROLE_LABELS = {
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+
+  const myRole = localStorage.getItem('role')
+  if (!localStorage.getItem('accessToken')) {
+    navigate('/login')
+    return null
+  }
+  if (myRole !== 'ADMIN') {
+    navigate('/dashboard')
+    return null
+  }
   const [showPw, setShowPw] = useState(false)
   const [showPwConfirm, setShowPwConfirm] = useState(false)
   const {
@@ -58,7 +68,7 @@ export default function RegisterPage() {
             <Factory className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">FactoryCare</h1>
-          <p className="text-slate-400 text-sm">계정 등록 (관리자 권한 필요)</p>
+          <p className="text-slate-400 text-sm">새 계정 등록</p>
         </div>
         <Card className="border-white/10 bg-white/5 backdrop-blur text-white">
           <CardHeader>
@@ -159,8 +169,7 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
         <p className="text-center text-sm text-slate-500">
-          이미 계정이 있으신가요?{' '}
-          <Link to="/login" className="text-blue-400 hover:text-blue-300 hover:underline font-medium">로그인</Link>
+          <Link to="/users" className="text-blue-400 hover:text-blue-300 hover:underline font-medium">회원 목록으로 돌아가기</Link>
         </p>
       </div>
     </div>

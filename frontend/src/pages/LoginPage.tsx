@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Factory, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import axiosInstance from '../api/axiosInstance'
@@ -80,10 +80,6 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
-        <p className="text-center text-sm text-slate-500">
-          계정이 없으신가요?{' '}
-          <Link to="/register" className="text-blue-400 hover:text-blue-300 hover:underline font-medium">계정 등록</Link>
-        </p>
       </div>
     </div>
   )
