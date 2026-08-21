@@ -103,7 +103,10 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
       })
       onSuccess()
     } catch (e: any) {
-      const msg = e.response?.data?.message ?? '계정 등록에 실패했습니다.'
+      const status = e.response?.status
+      const msg = status === 401 || status === 403
+        ? '계정 등록은 관리자(ADMIN) 권한이 필요합니다. 관리자로 로그인 후 이용하세요.'
+        : e.response?.data?.message ?? '계정 등록에 실패했습니다.'
       setError('root', { message: msg })
     }
   }
