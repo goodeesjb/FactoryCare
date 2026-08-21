@@ -2,7 +2,6 @@ import { createBrowserRouter } from 'react-router-dom'
 import Layout from '../components/Layout'
 import LandingPage from '../pages/LandingPage'
 import LoginPage from '../pages/LoginPage'
-import RegisterPage from '../pages/RegisterPage'
 import DashboardPage from '../pages/DashboardPage'
 import NotFoundPage from '../pages/NotFoundPage'
 import EquipmentListPage from '../pages/equipment/EquipmentListPage'
@@ -26,7 +25,6 @@ import UserListPage from '../pages/user/UserListPage'
 const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <Layout><RegisterPage /></Layout> },
   { path: '/dashboard', element: <Layout><DashboardPage /></Layout> },
   { path: '/equipments', element: <Layout><EquipmentListPage /></Layout> },
   { path: '/equipments/new', element: <Layout><EquipmentFormPage /></Layout> },
