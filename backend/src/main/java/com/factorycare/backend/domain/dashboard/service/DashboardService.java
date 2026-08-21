@@ -3,6 +3,7 @@ package com.factorycare.backend.domain.dashboard.service;
 import com.factorycare.backend.domain.dashboard.dto.*;
 import com.factorycare.backend.domain.equipment.entity.EquipmentStatus;
 import com.factorycare.backend.domain.equipment.repository.EquipmentRepository;
+import com.factorycare.backend.domain.fault.entity.Fault;
 import com.factorycare.backend.domain.fault.entity.FaultStatus;
 import com.factorycare.backend.domain.fault.repository.FaultRepository;
 import com.factorycare.backend.domain.inspection.entity.InspectionScheduleStatus;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Service
@@ -111,8 +113,11 @@ public class DashboardService {
     }
 
     private List<DashboardFaultItem> buildRecentFaults() {
-        return faultRepository.findRecentWithEquipment(PageRequest.of(0, 5))
+        return faultRepository.findRecentWithEquipment(PageRequest.of(0, 10))
             .stream()
+            .sorted(Comparator.comparingInt((Fault f) -> f.getSeverity().ordinal()).reversed()
+                .thenComparing(Comparator.comparing(Fault::getCreatedAt).reversed()))
+            .limit(5)
             .map(f -> new DashboardFaultItem(
                 f.getId(),
                 f.getTitle(),
