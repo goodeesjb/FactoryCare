@@ -26,7 +26,7 @@ import UserListPage from '../pages/user/UserListPage'
 const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <RegisterPage /> },
+  { path: '/register', element: <Layout><RegisterPage /></Layout> },
   { path: '/dashboard', element: <Layout><DashboardPage /></Layout> },
   { path: '/equipments', element: <Layout><EquipmentListPage /></Layout> },
   { path: '/equipments/new', element: <Layout><EquipmentFormPage /></Layout> },

@@ -71,6 +71,12 @@ export default function UserListPage() {
           <h1 className="text-2xl font-bold text-foreground">회원 관리</h1>
           <p className="text-sm text-muted-foreground mt-1">전체 {users.length}명</p>
         </div>
+        <button
+          onClick={() => navigate('/register')}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          계정 등록
+        </button>
       </div>
 
       <div className="bg-card rounded-xl border border-border overflow-hidden">
