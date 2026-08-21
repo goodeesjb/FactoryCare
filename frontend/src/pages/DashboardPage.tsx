@@ -103,6 +103,7 @@ export default function DashboardPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['dashboard', period, equipmentStatus],
     queryFn: () => dashboardApi.getSummary(period, equipmentStatus),
+    staleTime: 30_000,
   })
 
   const kpiCards = data
