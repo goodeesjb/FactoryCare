@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { partApi } from '../../api/parts'
 import { STOCK_STATUS_LABELS } from '../../types/parts'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../components/ui/card'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 export default function PartDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -14,6 +16,7 @@ export default function PartDetailPage() {
 
   const [showStockModal, setShowStockModal] = useState(false)
   const [newQuantity, setNewQuantity] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const { data: part, isLoading } = useQuery({
     queryKey: ['parts', id],
@@ -32,12 +35,21 @@ export default function PartDetailPage() {
       setShowStockModal(false)
       setNewQuantity('')
       queryClient.invalidateQueries({ queryKey: ['parts', id] })
+      toast.success('재고가 조정되었습니다.')
     },
+    onError: () => toast.error('재고 조정에 실패했습니다.'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: () => partApi.delete(Number(id)),
-    onSuccess: () => navigate('/parts'),
+    onSuccess: () => {
+      toast.success('부품이 삭제되었습니다.')
+      navigate('/parts')
+    },
+    onError: () => {
+      setConfirmDelete(false)
+      toast.error('부품 삭제에 실패했습니다.')
+    },
   })
 
   if (isLoading) return <p className="p-6 text-muted-foreground">로딩 중...</p>
@@ -70,9 +82,7 @@ export default function PartDetailPage() {
           <Button onClick={() => setShowStockModal(true)}>재고 조정</Button>
           <Button
             variant="destructive"
-            onClick={() => {
-              if (confirm('삭제하시겠습니까?')) deleteMutation.mutate()
-            }}
+            onClick={() => setConfirmDelete(true)}
           >
             삭제
           </Button>
@@ -182,7 +192,7 @@ export default function PartDetailPage() {
                 disabled={newQuantity === '' || adjustStockMutation.isPending}
                 className="flex-1"
               >
-                확인
+                {adjustStockMutation.isPending ? '처리 중...' : '확인'}
               </Button>
               <Button
                 variant="outline"
@@ -198,6 +208,16 @@ export default function PartDetailPage() {
           </Card>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="부품 삭제"
+        description="부품을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }

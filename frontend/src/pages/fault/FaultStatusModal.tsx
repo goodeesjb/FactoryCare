@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { faultApi } from '../../api/fault'
 import {
   FAULT_STATUS_LABELS,
@@ -29,7 +30,11 @@ export default function FaultStatusModal({ fault, onClose, onSuccess }: Props) {
         status: selectedStatus,
         reason: reason || undefined,
       }),
-    onSuccess,
+    onSuccess: () => {
+      toast.success('상태가 변경되었습니다.')
+      onSuccess()
+    },
+    onError: () => toast.error('상태 변경에 실패했습니다.'),
   })
 
   return (

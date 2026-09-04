@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { ClipboardList, Plus, Trash2, X, CheckSquare, Pencil } from 'lucide-react'
 import { inspectionChecklistApi } from '../../api/inspection'
 import { Button } from '../../components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import type { InspectionChecklist } from '../../types/inspection'
 
 export default function InspectionChecklistPage() {
@@ -14,6 +16,7 @@ export default function InspectionChecklistPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [itemsText, setItemsText] = useState('')
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
 
   const { data: checklists, isLoading } = useQuery({
     queryKey: ['inspection-checklists'],
@@ -24,8 +27,10 @@ export default function InspectionChecklistPage() {
     mutationFn: inspectionChecklistApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inspection-checklists'] })
+      toast.success('체크리스트가 등록되었습니다.')
       closeForm()
     },
+    onError: () => toast.error('체크리스트 등록에 실패했습니다.'),
   })
 
   const updateMutation = useMutation({
@@ -33,13 +38,23 @@ export default function InspectionChecklistPage() {
       inspectionChecklistApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inspection-checklists'] })
+      toast.success('체크리스트가 수정되었습니다.')
       closeForm()
     },
+    onError: () => toast.error('체크리스트 수정에 실패했습니다.'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: inspectionChecklistApi.delete,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inspection-checklists'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inspection-checklists'] })
+      setDeleteTargetId(null)
+      toast.success('체크리스트가 삭제되었습니다.')
+    },
+    onError: () => {
+      setDeleteTargetId(null)
+      toast.error('체크리스트 삭제에 실패했습니다.')
+    },
   })
 
   const closeForm = () => {
@@ -61,7 +76,10 @@ export default function InspectionChecklistPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const itemNames = itemsText.split('\n').map((s) => s.trim()).filter(Boolean)
-    if (itemNames.length === 0) return alert('점검 항목을 1개 이상 입력하세요.')
+    if (itemNames.length === 0) {
+      toast.error('점검 항목을 1개 이상 입력하세요.')
+      return
+    }
     if (editingId !== null) {
       updateMutation.mutate({ id: editingId, data: { name, description: description || undefined, itemNames } })
     } else {
@@ -211,9 +229,7 @@ export default function InspectionChecklistPage() {
                       variant="ghost"
                       size="icon"
                       className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        if (confirm('삭제하시겠습니까?')) deleteMutation.mutate(cl.id)
-                      }}
+                      onClick={() => setDeleteTargetId(cl.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -224,6 +240,16 @@ export default function InspectionChecklistPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title="체크리스트 삭제"
+        description="체크리스트를 삭제하시겠습니까?"
+        confirmLabel="삭제"
+        onConfirm={() => deleteTargetId !== null && deleteMutation.mutate(deleteTargetId)}
+        onCancel={() => setDeleteTargetId(null)}
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }

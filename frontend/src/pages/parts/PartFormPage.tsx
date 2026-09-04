@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { partApi } from '../../api/parts'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
@@ -52,9 +53,13 @@ export default function PartFormPage() {
       }),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['parts'] })
+      toast.success('부품이 등록되었습니다.')
       navigate(`/parts/${res.id}`)
     },
-    onError: () => setError('부품 등록에 실패했습니다.'),
+    onError: () => {
+      setError('부품 등록에 실패했습니다.')
+      toast.error('부품 등록에 실패했습니다.')
+    },
   })
 
   const updateMutation = useMutation({
@@ -68,9 +73,13 @@ export default function PartFormPage() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['parts'] })
+      toast.success('부품 정보가 수정되었습니다.')
       navigate(`/parts/${id}`)
     },
-    onError: () => setError('부품 수정에 실패했습니다.'),
+    onError: () => {
+      setError('부품 수정에 실패했습니다.')
+      toast.error('부품 수정에 실패했습니다.')
+    },
   })
 
   const isPending = createMutation.isPending || updateMutation.isPending

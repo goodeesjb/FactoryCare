@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { CalendarPlus, ArrowLeft } from 'lucide-react'
 import { inspectionChecklistApi, inspectionScheduleApi } from '../../api/inspection'
 import { equipmentApi } from '../../api/equipment'
@@ -33,7 +34,11 @@ export default function InspectionScheduleFormPage() {
 
   const createMutation = useMutation({
     mutationFn: inspectionScheduleApi.create,
-    onSuccess: () => navigate('/inspection-schedules'),
+    onSuccess: () => {
+      toast.success('점검 일정이 등록되었습니다.')
+      navigate('/inspection-schedules')
+    },
+    onError: () => toast.error('점검 일정 등록에 실패했습니다.'),
   })
 
   const handleSubmit = (e: React.FormEvent) => {

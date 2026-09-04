@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { faultApi } from '../../api/fault'
 import { equipmentApi } from '../../api/equipment'
 import { FAULT_SEVERITY_LABELS, type FaultSeverity } from '../../types/fault'
@@ -30,8 +31,14 @@ export default function FaultCreatePage() {
         description: form.description || undefined,
         severity: form.severity,
       }),
-    onSuccess: (res) => navigate(`/faults/${res.id}`),
-    onError: () => setError('장애 등록에 실패했습니다.'),
+    onSuccess: (res) => {
+      toast.success('장애가 등록되었습니다.')
+      navigate(`/faults/${res.id}`)
+    },
+    onError: () => {
+      setError('장애 등록에 실패했습니다.')
+      toast.error('장애 등록에 실패했습니다.')
+    },
   })
 
   const inputCls =

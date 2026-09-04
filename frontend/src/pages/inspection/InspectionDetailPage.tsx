@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { ArrowLeft, ClipboardCheck, AlertTriangle, CheckCircle, Clock, User } from 'lucide-react'
 import { inspectionApi, inspectionChecklistApi, inspectionScheduleApi } from '../../api/inspection'
 import { type InspectionResultValue } from '../../types/inspection'
@@ -37,7 +38,9 @@ export default function InspectionDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inspection', id] })
       queryClient.invalidateQueries({ queryKey: ['inspection-schedules'] })
+      toast.success('점검이 완료되었습니다.')
     },
+    onError: () => toast.error('점검 완료 처리에 실패했습니다.'),
   })
 
   if (isLoading) {
@@ -64,7 +67,7 @@ export default function InspectionDetailPage() {
       note: v.note || undefined,
     }))
     if (results.length === 0) {
-      alert('점검 결과를 입력하세요.')
+      toast.error('점검 결과를 입력하세요.')
       return
     }
     completeMutation.mutate({ results })
@@ -281,7 +284,6 @@ function ChecklistForm({
   )
 }
 
-// inline icon component to avoid adding an extra import that might not exist
 function ChecklistCheck({ className }: { className?: string }) {
   return (
     <svg

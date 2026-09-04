@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { maintenanceApi } from '../../api/maintenance'
 import { equipmentApi } from '../../api/equipment'
 import { faultApi } from '../../api/fault'
@@ -56,8 +57,14 @@ export default function MaintenanceCreatePage() {
         priority: form.priority,
         scheduledDate: form.scheduledDate || undefined,
       }),
-    onSuccess: (res) => navigate(`/maintenance/${res.id}`),
-    onError: () => setError('작업 등록에 실패했습니다.'),
+    onSuccess: (res) => {
+      toast.success('작업이 등록되었습니다.')
+      navigate(`/maintenance/${res.id}`)
+    },
+    onError: () => {
+      setError('작업 등록에 실패했습니다.')
+      toast.error('작업 등록에 실패했습니다.')
+    },
   })
 
   const inputCls =

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { Eye, EyeOff, X } from 'lucide-react'
 import { userApi } from '../../api/users'
 import { USER_ROLE_LABELS } from '../../types/users'
@@ -33,6 +34,7 @@ function RegisterModal({ onClose }: { onClose: () => void }) {
     try {
       await userApi.create({ loginId: data.loginId, password: data.password, name: data.name, role: data.role })
       queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast.success('계정이 등록되었습니다.')
       reset()
       onClose()
     } catch (e: any) {
@@ -41,6 +43,7 @@ function RegisterModal({ onClose }: { onClose: () => void }) {
         ? '관리자(ADMIN) 권한이 필요합니다.'
         : e.response?.data?.message ?? '계정 등록에 실패했습니다.'
       setError('root', { message: msg })
+      toast.error(msg)
     }
   }
 
@@ -183,7 +186,9 @@ export default function UserListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       setRoleModal({ open: false, user: null })
+      toast.success('역할이 변경되었습니다.')
     },
+    onError: () => toast.error('역할 변경에 실패했습니다.'),
   })
 
   const deactivateMut = useMutation({
@@ -191,6 +196,11 @@ export default function UserListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       setDeactivateId(null)
+      toast.success('계정이 비활성화되었습니다.')
+    },
+    onError: () => {
+      setDeactivateId(null)
+      toast.error('계정 비활성화에 실패했습니다.')
     },
   })
 
