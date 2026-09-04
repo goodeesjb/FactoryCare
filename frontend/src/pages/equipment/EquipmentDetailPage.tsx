@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Pencil, Trash2, ArrowRight, Clock } from 'lucide-react'
 import { equipmentApi } from '../../api/equipment'
 import { EQUIPMENT_STATUS_LABELS } from '../../types/equipment'
@@ -9,6 +10,7 @@ import StatusChangeModal from '../../components/equipment/StatusChangeModal'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 const STATUS_BADGE_VARIANT: Record<EquipmentStatus, 'success' | 'warning' | 'destructive' | 'info' | 'secondary'> = {
   NORMAL: 'success',
@@ -23,6 +25,7 @@ export default function EquipmentDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showModal, setShowModal] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const { data: equipment, isLoading } = useQuery({
     queryKey: ['equipment', id],
@@ -40,8 +43,10 @@ export default function EquipmentDetailPage() {
     mutationFn: () => equipmentApi.delete(Number(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['equipments'] })
+      toast.success('설비가 삭제되었습니다.')
       navigate('/equipments')
     },
+    onError: () => toast.error('설비 삭제에 실패했습니다.'),
   })
 
   if (isLoading) {
@@ -92,9 +97,7 @@ export default function EquipmentDetailPage() {
             variant="ghost"
             size="sm"
             className="text-red-500 hover:text-red-600 hover:bg-red-50"
-            onClick={() => {
-              if (confirm('비활성화하시겠습니까?')) deleteMutation.mutate()
-            }}
+            onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="mr-1.5 h-4 w-4" />
             삭제
@@ -138,11 +141,9 @@ export default function EquipmentDetailPage() {
             <ul className="space-y-0">
               {histories.map((h, index) => (
                 <li key={h.id} className="relative flex gap-4">
-                  {/* 타임라인 선 */}
                   {index < histories.length - 1 && (
                     <div className="absolute left-3 top-8 bottom-0 w-px bg-border" />
                   )}
-                  {/* 타임라인 도트 */}
                   <div className="relative z-10 mt-1 h-6 w-6 flex-shrink-0 rounded-full border-2 border-border bg-background" />
                   <div className="pb-6 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -181,6 +182,16 @@ export default function EquipmentDetailPage() {
           onClose={() => setShowModal(false)}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="설비 삭제"
+        description="설비를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }

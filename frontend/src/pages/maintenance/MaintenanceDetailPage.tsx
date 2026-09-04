@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { maintenanceApi } from '../../api/maintenance'
 import { partApi, partUsageApi } from '../../api/parts'
 import {
@@ -13,6 +14,7 @@ import {
 import { Button } from '../../components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 const statusVariant: Record<MaintenanceStatus, 'warning' | 'info' | 'success' | 'secondary'> = {
   PENDING: 'warning',
@@ -43,6 +45,9 @@ export default function MaintenanceDetailPage() {
   const [selectedPartId, setSelectedPartId] = useState<number | ''>('')
   const [partQuantity, setPartQuantity] = useState(1)
   const [partNote, setPartNote] = useState('')
+  const [confirmCancel, setConfirmCancel] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmRemovePartId, setConfirmRemovePartId] = useState<number | null>(null)
 
   const { data: task, isLoading } = useQuery({
     queryKey: ['maintenance', id],
@@ -67,7 +72,13 @@ export default function MaintenanceDetailPage() {
 
   const startMutation = useMutation({
     mutationFn: () => maintenanceApi.start(Number(id), { content: startContent }),
-    onSuccess: () => { setShowStartModal(false); setStartContent(''); invalidate() },
+    onSuccess: () => {
+      setShowStartModal(false)
+      setStartContent('')
+      invalidate()
+      toast.success('작업이 시작되었습니다.')
+    },
+    onError: () => toast.error('작업 시작에 실패했습니다.'),
   })
 
   const completeMutation = useMutation({
@@ -76,17 +87,39 @@ export default function MaintenanceDetailPage() {
         content: completeContent,
         durationMinutes: durationMinutes ? Number(durationMinutes) : undefined,
       }),
-    onSuccess: () => { setShowCompleteModal(false); setCompleteContent(''); setDurationMinutes(''); invalidate() },
+    onSuccess: () => {
+      setShowCompleteModal(false)
+      setCompleteContent('')
+      setDurationMinutes('')
+      invalidate()
+      toast.success('작업이 완료되었습니다.')
+    },
+    onError: () => toast.error('작업 완료 처리에 실패했습니다.'),
   })
 
   const cancelMutation = useMutation({
     mutationFn: () => maintenanceApi.cancel(Number(id)),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate()
+      setConfirmCancel(false)
+      toast.success('작업이 취소되었습니다.')
+    },
+    onError: () => {
+      setConfirmCancel(false)
+      toast.error('작업 취소에 실패했습니다.')
+    },
   })
 
   const deleteMutation = useMutation({
     mutationFn: () => maintenanceApi.delete(Number(id)),
-    onSuccess: () => navigate('/maintenance'),
+    onSuccess: () => {
+      toast.success('작업이 삭제되었습니다.')
+      navigate('/maintenance')
+    },
+    onError: () => {
+      setConfirmDelete(false)
+      toast.error('작업 삭제에 실패했습니다.')
+    },
   })
 
   const addPartMutation = useMutation({
@@ -103,12 +136,22 @@ export default function MaintenanceDetailPage() {
       setPartNote('')
       setPartKeyword('')
       queryClient.invalidateQueries({ queryKey: ['maintenance', id, 'parts'] })
+      toast.success('부품이 추가되었습니다.')
     },
+    onError: () => toast.error('부품 추가에 실패했습니다.'),
   })
 
   const removePartMutation = useMutation({
     mutationFn: (usageId: number) => partUsageApi.delete(Number(id), usageId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['maintenance', id, 'parts'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['maintenance', id, 'parts'] })
+      setConfirmRemovePartId(null)
+      toast.success('부품 사용이 취소되었습니다.')
+    },
+    onError: () => {
+      setConfirmRemovePartId(null)
+      toast.error('부품 사용 취소에 실패했습니다.')
+    },
   })
 
   if (isLoading) return <p className="p-6 text-muted-foreground">로딩 중...</p>
@@ -145,13 +188,13 @@ export default function MaintenanceDetailPage() {
           {!isDone && (
             <Button
               className="bg-orange-500 text-white hover:bg-orange-600"
-              onClick={() => { if (confirm('취소하시겠습니까?')) cancelMutation.mutate() }}
+              onClick={() => setConfirmCancel(true)}
             >취소</Button>
           )}
           {isPending && (
             <Button
               variant="destructive"
-              onClick={() => { if (confirm('삭제하시겠습니까?')) deleteMutation.mutate() }}
+              onClick={() => setConfirmDelete(true)}
             >삭제</Button>
           )}
         </div>
@@ -251,10 +294,7 @@ export default function MaintenanceDetailPage() {
                       {!isDone && (
                         <td className="py-2">
                           <button
-                            onClick={() => {
-                              if (confirm('사용 취소 시 재고가 복구됩니다. 삭제하시겠습니까?'))
-                                removePartMutation.mutate(u.id)
-                            }}
+                            onClick={() => setConfirmRemovePartId(u.id)}
                             className="text-xs text-destructive hover:underline"
                           >
                             취소
@@ -429,6 +469,36 @@ export default function MaintenanceDetailPage() {
           </Card>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmCancel}
+        title="작업 취소"
+        description="작업을 취소하시겠습니까?"
+        confirmLabel="취소 처리"
+        onConfirm={() => cancelMutation.mutate()}
+        onCancel={() => setConfirmCancel(false)}
+        loading={cancelMutation.isPending}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="작업 삭제"
+        description="작업을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+        loading={deleteMutation.isPending}
+      />
+
+      <ConfirmDialog
+        open={confirmRemovePartId !== null}
+        title="부품 사용 취소"
+        description="사용 취소 시 재고가 복구됩니다. 취소하시겠습니까?"
+        confirmLabel="취소 처리"
+        onConfirm={() => confirmRemovePartId !== null && removePartMutation.mutate(confirmRemovePartId)}
+        onCancel={() => setConfirmRemovePartId(null)}
+        loading={removePartMutation.isPending}
+      />
     </div>
   )
 }

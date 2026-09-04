@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { faultApi } from '../../api/fault'
 import {
   FAULT_SEVERITY_LABELS,
@@ -12,6 +13,7 @@ import FaultStatusModal from './FaultStatusModal'
 import { Button } from '../../components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 const severityVariant: Record<FaultSeverity, 'secondary' | 'warning' | 'orange' | 'destructive'> = {
   LOW: 'secondary',
@@ -34,6 +36,7 @@ export default function FaultDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showStatusModal, setShowStatusModal] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const { data: fault, isLoading } = useQuery({
     queryKey: ['fault', faultId],
@@ -43,8 +46,11 @@ export default function FaultDetailPage() {
 
   const deleteMutation = useMutation({
     mutationFn: () => faultApi.delete(faultId),
-    onSuccess: () => navigate('/faults'),
-    onError: () => alert('삭제에 실패했습니다.'),
+    onSuccess: () => {
+      toast.success('장애가 삭제되었습니다.')
+      navigate('/faults')
+    },
+    onError: () => toast.error('장애 삭제에 실패했습니다.'),
   })
 
   if (isLoading) return <p className="p-6 text-muted-foreground">로딩 중...</p>
@@ -78,9 +84,7 @@ export default function FaultDetailPage() {
           </Button>
           <Button
             variant="destructive"
-            onClick={() => {
-              if (confirm('삭제하시겠습니까?')) deleteMutation.mutate()
-            }}
+            onClick={() => setConfirmDelete(true)}
             disabled={deleteMutation.isPending}
           >
             삭제
@@ -181,6 +185,16 @@ export default function FaultDetailPage() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="장애 삭제"
+        description="장애를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        onConfirm={() => deleteMutation.mutate()}
+        onCancel={() => setConfirmDelete(false)}
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }

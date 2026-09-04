@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { CalendarCheck, Plus, Play, Trash2, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
 import { inspectionScheduleApi } from '../../api/inspection'
 import {
@@ -11,6 +12,7 @@ import {
 import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 const STATUS_OPTIONS: InspectionScheduleStatus[] = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'OVERDUE']
 
@@ -28,6 +30,7 @@ export default function InspectionScheduleListPage() {
     page: 0,
     size: 10,
   })
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['inspection-schedules', params],
@@ -38,13 +41,23 @@ export default function InspectionScheduleListPage() {
     mutationFn: inspectionScheduleApi.start,
     onSuccess: (inspection) => {
       queryClient.invalidateQueries({ queryKey: ['inspection-schedules'] })
+      toast.success('점검이 시작되었습니다.')
       navigate(`/inspections/${inspection.id}`)
     },
+    onError: () => toast.error('점검 시작에 실패했습니다.'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: inspectionScheduleApi.delete,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inspection-schedules'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inspection-schedules'] })
+      setDeleteTargetId(null)
+      toast.success('점검 일정이 삭제되었습니다.')
+    },
+    onError: () => {
+      setDeleteTargetId(null)
+      toast.error('점검 일정 삭제에 실패했습니다.')
+    },
   })
 
   return (
@@ -107,11 +120,13 @@ export default function InspectionScheduleListPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {data?.content.map((s) => (
-                    <tr key={s.id} className="hover:bg-muted/30 transition-colors">
+                    <tr key={s.id} className={`hover:bg-muted/30 transition-colors${s.status === 'OVERDUE' ? ' bg-destructive/5' : ''}`}>
                       <td className="px-4 py-3 font-medium">{s.equipmentName}</td>
                       <td className="px-4 py-3 text-muted-foreground">{s.checklistName}</td>
                       <td className="px-4 py-3 text-muted-foreground">{s.assigneeName}</td>
-                      <td className="px-4 py-3 font-mono text-xs">{s.scheduledDate}</td>
+                      <td className={`px-4 py-3 font-mono text-xs${s.status === 'OVERDUE' ? ' text-destructive font-semibold' : ''}`}>
+                        {s.scheduledDate}
+                      </td>
                       <td className="px-4 py-3">
                         <Badge variant="outline">{SCHEDULE_TYPE_LABELS[s.inspectionType]}</Badge>
                       </td>
@@ -137,9 +152,7 @@ export default function InspectionScheduleListPage() {
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => {
-                              if (confirm('삭제하시겠습니까?')) deleteMutation.mutate(s.id)
-                            }}
+                            onClick={() => setDeleteTargetId(s.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -188,6 +201,16 @@ export default function InspectionScheduleListPage() {
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title="점검 일정 삭제"
+        description="점검 일정을 삭제하시겠습니까?"
+        confirmLabel="삭제"
+        onConfirm={() => deleteTargetId !== null && deleteMutation.mutate(deleteTargetId)}
+        onCancel={() => setDeleteTargetId(null)}
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }

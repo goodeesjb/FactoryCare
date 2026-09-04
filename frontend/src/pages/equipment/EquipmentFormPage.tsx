@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { equipmentApi, equipmentTypeApi } from '../../api/equipment'
 import type { EquipmentCreateRequest } from '../../types/equipment'
 import { Button } from '../../components/ui/button'
@@ -54,8 +55,10 @@ export default function EquipmentFormPage() {
     mutationFn: (data: EquipmentCreateRequest) => equipmentApi.create(data),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['equipments'] })
+      toast.success('설비가 등록되었습니다.')
       navigate(`/equipments/${res.id}`)
     },
+    onError: () => toast.error('설비 등록에 실패했습니다.'),
   })
 
   const updateMutation = useMutation({
@@ -63,8 +66,10 @@ export default function EquipmentFormPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['equipments'] })
       queryClient.invalidateQueries({ queryKey: ['equipment', id] })
+      toast.success('설비 정보가 수정되었습니다.')
       navigate(`/equipments/${id}`)
     },
+    onError: () => toast.error('설비 수정에 실패했습니다.'),
   })
 
   const onSubmit = (data: EquipmentCreateRequest) => {

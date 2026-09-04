@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Search, Plus, Eye, Pencil, Trash2 } from 'lucide-react'
 import { equipmentApi, equipmentTypeApi } from '../../api/equipment'
 import {
@@ -11,6 +12,7 @@ import {
 import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 
 const STATUS_OPTIONS: EquipmentStatus[] = [
   'NORMAL',
@@ -35,6 +37,7 @@ export default function EquipmentListPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [params, setParams] = useState<EquipmentSearchParams>({ page: 0, size: 10 })
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['equipments', params],
@@ -48,7 +51,15 @@ export default function EquipmentListPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => equipmentApi.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['equipments'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['equipments'] })
+      setDeleteTargetId(null)
+      toast.success('설비가 삭제되었습니다.')
+    },
+    onError: () => {
+      setDeleteTargetId(null)
+      toast.error('설비 삭제에 실패했습니다.')
+    },
   })
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -180,9 +191,7 @@ export default function EquipmentListPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                if (confirm('설비를 삭제하시겠습니까?')) deleteMutation.mutate(eq.id)
-                              }}
+                              onClick={() => setDeleteTargetId(eq.id)}
                               className="h-7 px-2 text-xs text-red-500 hover:text-red-600 hover:bg-red-50"
                             >
                               <Trash2 className="mr-1 h-3 w-3" />
@@ -222,6 +231,16 @@ export default function EquipmentListPage() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        title="설비 삭제"
+        description="설비를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        onConfirm={() => deleteTargetId !== null && deleteMutation.mutate(deleteTargetId)}
+        onCancel={() => setDeleteTargetId(null)}
+        loading={deleteMutation.isPending}
+      />
     </div>
   )
 }
