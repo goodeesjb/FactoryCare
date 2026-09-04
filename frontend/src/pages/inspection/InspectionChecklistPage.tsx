@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ClipboardList, Plus, Trash2, X, CheckSquare } from 'lucide-react'
+import { ClipboardList, Plus, Trash2, X, CheckSquare, Pencil } from 'lucide-react'
 import { inspectionChecklistApi } from '../../api/inspection'
 import { Button } from '../../components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
+import type { InspectionChecklist } from '../../types/inspection'
 
 export default function InspectionChecklistPage() {
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [itemsText, setItemsText] = useState('')
@@ -22,10 +24,16 @@ export default function InspectionChecklistPage() {
     mutationFn: inspectionChecklistApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inspection-checklists'] })
-      setShowForm(false)
-      setName('')
-      setDescription('')
-      setItemsText('')
+      closeForm()
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Parameters<typeof inspectionChecklistApi.update>[1] }) =>
+      inspectionChecklistApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inspection-checklists'] })
+      closeForm()
     },
   })
 
@@ -34,12 +42,34 @@ export default function InspectionChecklistPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['inspection-checklists'] }),
   })
 
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingId(null)
+    setName('')
+    setDescription('')
+    setItemsText('')
+  }
+
+  const startEdit = (cl: InspectionChecklist) => {
+    setEditingId(cl.id)
+    setName(cl.name)
+    setDescription(cl.description ?? '')
+    setItemsText(cl.items.map((i) => i.itemName).join('\n'))
+    setShowForm(true)
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const itemNames = itemsText.split('\n').map((s) => s.trim()).filter(Boolean)
     if (itemNames.length === 0) return alert('점검 항목을 1개 이상 입력하세요.')
-    createMutation.mutate({ name, description: description || undefined, itemNames })
+    if (editingId !== null) {
+      updateMutation.mutate({ id: editingId, data: { name, description: description || undefined, itemNames } })
+    } else {
+      createMutation.mutate({ name, description: description || undefined, itemNames })
+    }
   }
+
+  const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
     <div className="p-6 space-y-6">
@@ -55,7 +85,7 @@ export default function InspectionChecklistPage() {
           </div>
         </div>
         <Button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => (showForm ? closeForm() : setShowForm(true))}
           variant={showForm ? 'outline' : 'default'}
         >
           {showForm ? (
@@ -72,11 +102,11 @@ export default function InspectionChecklistPage() {
         </Button>
       </div>
 
-      {/* Create Form */}
+      {/* Create / Edit Form */}
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>새 체크리스트 템플릿</CardTitle>
+            <CardTitle>{editingId !== null ? '체크리스트 수정' : '새 체크리스트 템플릿'}</CardTitle>
             <CardDescription>템플릿명과 점검 항목을 입력하세요</CardDescription>
           </CardHeader>
           <CardContent>
@@ -113,10 +143,10 @@ export default function InspectionChecklistPage() {
                 />
               </div>
               <div className="flex gap-2 pt-1">
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? '저장 중...' : '저장'}
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? '저장 중...' : editingId !== null ? '수정 완료' : '저장'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="outline" onClick={closeForm}>
                   취소
                 </Button>
               </div>
@@ -168,16 +198,26 @@ export default function InspectionChecklistPage() {
                       ))}
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-                    onClick={() => {
-                      if (confirm('삭제하시겠습니까?')) deleteMutation.mutate(cl.id)
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      onClick={() => startEdit(cl)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        if (confirm('삭제하시겠습니까?')) deleteMutation.mutate(cl.id)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
