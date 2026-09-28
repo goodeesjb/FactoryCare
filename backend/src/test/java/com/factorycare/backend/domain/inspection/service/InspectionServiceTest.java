@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +24,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class InspectionServiceTest {
 
     @InjectMocks InspectionService inspectionService;
@@ -44,29 +41,30 @@ class InspectionServiceTest {
     @BeforeEach
     void setUp() {
         inspector = mock(User.class);
-        given(inspector.getId()).willReturn(1L);
 
         schedule = mock(InspectionSchedule.class);
 
         inspection = Inspection.builder().schedule(schedule).inspector(inspector).build();
 
         item1 = mock(InspectionChecklistItem.class);
-        given(item1.getId()).willReturn(1L);
-        given(item1.getItemName()).willReturn("모터 온도");
-
         item2 = mock(InspectionChecklistItem.class);
-        given(item2.getId()).willReturn(2L);
-        given(item2.getItemName()).willReturn("오일 누유");
 
         given(inspectionRepository.findById(1L)).willReturn(Optional.of(inspection));
-        given(resultRepository.saveAll(anyList())).willAnswer(inv -> inv.getArgument(0));
-        given(checklistItemRepository.findById(1L)).willReturn(Optional.of(item1));
-        given(checklistItemRepository.findById(2L)).willReturn(Optional.of(item2));
     }
 
     @Test
     @DisplayName("FAIL 결과 포함 완료 → faultService.createFromInspectionResult 호출")
     void complete_withFail_callsFaultService() {
+        given(inspector.getId()).willReturn(1L);
+        given(item1.getId()).willReturn(1L);
+        given(item1.getItemName()).willReturn("모터 온도");
+        given(item2.getId()).willReturn(2L);
+        given(item2.getItemName()).willReturn("오일 누유");
+
+        given(resultRepository.saveAll(anyList())).willAnswer(inv -> inv.getArgument(0));
+        given(checklistItemRepository.findById(1L)).willReturn(Optional.of(item1));
+        given(checklistItemRepository.findById(2L)).willReturn(Optional.of(item2));
+
         InspectionCompleteRequest req = new InspectionCompleteRequest(List.of(
             new InspectionResultRequest(1L, InspectionResultValue.PASS, null),
             new InspectionResultRequest(2L, InspectionResultValue.FAIL, "오일 누유 발견")
@@ -82,6 +80,16 @@ class InspectionServiceTest {
     @Test
     @DisplayName("PASS만 완료 → faultService 미호출, hasAbnormality=false")
     void complete_allPass_noFaultCreated() {
+        given(inspector.getId()).willReturn(1L);
+        given(item1.getId()).willReturn(1L);
+        given(item1.getItemName()).willReturn("모터 온도");
+        given(item2.getId()).willReturn(2L);
+        given(item2.getItemName()).willReturn("오일 누유");
+
+        given(resultRepository.saveAll(anyList())).willAnswer(inv -> inv.getArgument(0));
+        given(checklistItemRepository.findById(1L)).willReturn(Optional.of(item1));
+        given(checklistItemRepository.findById(2L)).willReturn(Optional.of(item2));
+
         InspectionCompleteRequest req = new InspectionCompleteRequest(List.of(
             new InspectionResultRequest(1L, InspectionResultValue.PASS, null),
             new InspectionResultRequest(2L, InspectionResultValue.PASS, null)
@@ -96,6 +104,16 @@ class InspectionServiceTest {
     @Test
     @DisplayName("FAIL 2개 완료 → faultService 2번 호출")
     void complete_twoFails_calledTwice() {
+        given(inspector.getId()).willReturn(1L);
+        given(item1.getId()).willReturn(1L);
+        given(item1.getItemName()).willReturn("모터 온도");
+        given(item2.getId()).willReturn(2L);
+        given(item2.getItemName()).willReturn("오일 누유");
+
+        given(resultRepository.saveAll(anyList())).willAnswer(inv -> inv.getArgument(0));
+        given(checklistItemRepository.findById(1L)).willReturn(Optional.of(item1));
+        given(checklistItemRepository.findById(2L)).willReturn(Optional.of(item2));
+
         InspectionCompleteRequest req = new InspectionCompleteRequest(List.of(
             new InspectionResultRequest(1L, InspectionResultValue.FAIL, "고온"),
             new InspectionResultRequest(2L, InspectionResultValue.FAIL, "누유")
@@ -109,12 +127,10 @@ class InspectionServiceTest {
     @Test
     @DisplayName("이미 완료된 점검 재완료 시도 → IllegalStateException")
     void complete_alreadyCompleted_throws() {
-        Inspection completedInspection = Inspection.builder().schedule(schedule).inspector(inspector).build();
-        completedInspection.complete(false);
-        given(inspectionRepository.findById(2L)).willReturn(Optional.of(completedInspection));
+        inspection.complete(false);
 
         assertThatThrownBy(() ->
-            inspectionService.complete(2L, new InspectionCompleteRequest(List.of(
+            inspectionService.complete(1L, new InspectionCompleteRequest(List.of(
                 new InspectionResultRequest(1L, InspectionResultValue.PASS, null)
             ))))
             .isInstanceOf(IllegalStateException.class)
