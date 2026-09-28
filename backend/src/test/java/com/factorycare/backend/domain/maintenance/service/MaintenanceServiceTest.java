@@ -7,7 +7,6 @@ import com.factorycare.backend.domain.maintenance.dto.*;
 import com.factorycare.backend.domain.maintenance.entity.*;
 import com.factorycare.backend.domain.maintenance.repository.MaintenanceRepository;
 import com.factorycare.backend.domain.user.entity.User;
-import com.factorycare.backend.domain.user.entity.UserRole;
 import com.factorycare.backend.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,10 +26,10 @@ import static org.mockito.BDDMockito.*;
 class MaintenanceServiceTest {
 
     @InjectMocks MaintenanceService maintenanceService;
-    @Mock(lenient = true) MaintenanceRepository maintenanceRepository;
-    @Mock(lenient = true) EquipmentRepository equipmentRepository;
-    @Mock(lenient = true) UserRepository userRepository;
-    @Mock(lenient = true) FaultRepository faultRepository;
+    @Mock MaintenanceRepository maintenanceRepository;
+    @Mock EquipmentRepository equipmentRepository;
+    @Mock UserRepository userRepository;
+    @Mock FaultRepository faultRepository;
 
     Equipment equipment;
     User creator;
@@ -39,12 +38,7 @@ class MaintenanceServiceTest {
     @BeforeEach
     void setUp() {
         equipment = mock(Equipment.class);
-        lenient().when(equipment.getId()).thenReturn(1L);
-        lenient().when(equipment.getName()).thenReturn("컨베이어");
-
         creator = mock(User.class);
-        lenient().when(creator.getId()).thenReturn(2L);
-        lenient().when(creator.getName()).thenReturn("매니저");
 
         pendingTask = MaintenanceTask.builder()
             .taskNo("MT-2026-001").equipment(equipment)
